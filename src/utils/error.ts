@@ -1,4 +1,4 @@
-class GotErr extends Error {
+export class GotErr extends Error {
     code:number;
     constructor(code:number,message:string){
         super(message)
