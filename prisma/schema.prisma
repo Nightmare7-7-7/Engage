@@ -5,8 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,3 +14,85 @@ datasource db {
 
 
 // Define your database models here and run `prisma db push` to apply them to the database.
+
+enum active_status {
+  Online
+  Offline
+}
+
+model User {
+  id Int @id  @default(autoincrement())
+  fullname String
+  username String @unique
+  email String @unique
+  password String
+  email_verified Boolean @default(false)
+  profile_picture String?
+  bio String? @default("No Bio Yet")
+  active active_status @default(Online)
+  following Follow[] @relation("following")
+  followers Follow[] @relation("followers")
+  posts Post[]
+  saved Save[]
+  likes Like[]
+  comments Comment[]
+  is_admin Boolean @default(false)
+
+}
+
+enum status {
+  Public
+  Private
+}
+
+model Post {
+  id Int @id  @default(autoincrement())
+  caption String
+  content_url String
+  creator User @relation(fields: [creator_id], references: [id])
+  creator_id Int
+  likes Like[]
+  comments Comment[]
+  saves Save[]
+  visibility status @default(Public)
+  
+}
+
+model Save {
+  id Int @id  @default(autoincrement())
+  saver_id Int 
+  post_id Int
+  saver User @relation(fields: [saver_id],references: [id])
+  post Post @relation(fields: [post_id],references: [id])
+  @@unique([saver_id,post_id])
+}
+
+model Follow {
+  id Int @id  @default(autoincrement())
+  following_id Int
+  follower_id Int
+  following User @relation("following",fields: [following_id],references: [id])
+  follower User @relation("followers",fields: [follower_id],references: [id])
+  @@unique([follower_id, following_id])
+}
+
+
+model Like{
+  id Int @id  @default(autoincrement())
+  liked_id Int
+  liker_id Int
+  liked Post @relation(fields: [liked_id],references: [id])
+  liker User @relation(fields: [liker_id],references: [id])
+  @@unique([liker_id,liked_id])
+
+}
+
+
+model Comment {
+  id Int @id  @default(autoincrement())
+  comment String
+  commented_id Int
+  commenter_id Int
+  commented Post @relation(fields: [commented_id],references: [id])
+  commenter User @relation(fields: [commenter_id],references: [id])
+}
