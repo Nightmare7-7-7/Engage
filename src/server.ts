@@ -2,6 +2,7 @@ import exppress from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import "dotenv/config"
+import userRoutes from './routes/user.routes';
 
 // Create an Express application
 const app = exppress();
@@ -18,3 +19,8 @@ const port = process.env.PORT || 8081;
 app.listen((port),()=>{
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+
+//api paths
+
+app.use("/api/v1",userRoutes);
