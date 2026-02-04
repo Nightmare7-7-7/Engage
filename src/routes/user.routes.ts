@@ -4,6 +4,5 @@ import { Register } from "../controllers/user.controllers";
 const userRoutes = Router()
 
 
-userRoutes.get("/user/account/create",Register);
-
+userRoutes.post("/user/account/create",Register);
 export default userRoutes;
