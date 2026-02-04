@@ -1,19 +1,43 @@
 {
   "compilerOptions": {
-    "target": "es2024",
-    "module": "commonjs",
+    // Target modern Node.js
+    "target": "ES2024",            // modern JS output
+    "module": "CommonJS",          // Node requires CommonJS
+    "moduleResolution": "node",    // resolve modules like Node does
 
-    "rootDir": "./src",
-    "outDir": "./dist",
+    // Source / output folders
+    "rootDir": "./src",             // all your TS code lives here
+    "outDir": "./dist",             // compiled JS will go here
 
-    "strict": true,
+    // Type checking
+    "strict": true,                 // enable all strict checks
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
 
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
+    // Interop
+    "esModuleInterop": true,        // allow import fs from 'fs'
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,      // allow importing JSON files
 
-    "types": ["node"],
+    // Type declarations
+    "types": ["node"],              // include Node types
+    "skipLibCheck": true,           // skip types of node_modules
+    "forceConsistentCasingInFileNames": true,
 
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    // Source maps
+    "sourceMap": true,              // useful for debugging
+    "declaration": true,            // generate .d.ts files
+    "declarationMap": true          // map declarations to TS source
+  },
+
+  // Files / folders included in compilation
+  "include": ["src"],
+
+  // Files / folders excluded from compilation
+  "exclude": ["node_modules", "dist"]
 }
+
