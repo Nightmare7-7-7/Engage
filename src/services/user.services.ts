@@ -3,6 +3,9 @@ import { prisma } from "../configs/client"
 import { GotErr } from "../utils/error";
 import { compare, hash } from "../utils/hash";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
+import crypto from "crypto"
+import mailer from "../utils/mailer";
+import forgotPasswordCodeContent from "../utils/mailContent";
 
 type UserData = {
     fullname: string;
@@ -102,7 +105,7 @@ export const LoginUser = async (email: string, password: string) => {
         profile_picture: userExists.profile_picture,
         bio: userExists.bio,
         is_admin: userExists.is_admin,
-        auth_token:token
+        auth_token: token
     };
 
 }
@@ -120,3 +123,62 @@ export const UploadImage = async (image: Buffer) => {
     return imageUrl;
 
 }
+
+
+export const SendCode = async (email: string) => {
+
+    if (!email) {
+        throw new GotErr(400, "email shouldnt be empty");
+    }
+
+    
+    // basic fragile valid email check 
+    if (!email.includes("@")) {
+        throw new GotErr(400, "'please provide a valid email address");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!user) {
+        throw new GotErr(400, "User with this email doesn't exists please kindly provide a valid one");
+    }
+
+    // generate random 6 digits code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+
+    // hashing code  so even if someone breaks into db he/she couldn't use code to reset others account password
+    const codeHash = await crypto.createHash("sha256").update(code).digest("hex");
+
+    const setCode = await prisma.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            reset_code_hash: codeHash,
+            reset_code_expiry: new Date(Date.now() + 10 * 60 * 1000)
+        }
+    });
+
+    if (!setCode) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    // send mail to the user email
+
+    const send = await mailer.sendMail({
+        from: process.env.EMAIL,
+        to: email,
+        subject: "Password Reset Code",
+        html: forgotPasswordCodeContent(code)
+    });
+
+    if (!send) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    return;
+
+} 

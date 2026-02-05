@@ -1,5 +1,5 @@
-import { ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage } from "../services/user.services";
+import { includes, success, ZodError } from "zod";
+import { RegisterUser, LoginUser, UploadImage, SendCode } from "../services/user.services";
 import { loginValidator, registerValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -134,13 +134,45 @@ export const UploadProfile = async (req: Request, res: Response) => {
 }
 
 
-export const Logout = async (req:Request,res: Response) => {
+export const Logout = async (req: Request, res: Response) => {
 
     // clear auth token on logout action
     res.clearCookie("auth_token");
 
     return res.status(200).json({
-        success:true,
+        success: true,
         message: "You have been loggedOut successfully"
     });
+}
+
+
+export const ForgetPassword = async (req: Request, res: Response) => {
+    try {
+
+        const { email } = req.body
+
+
+        const code = await SendCode(email);
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset code has been successfully sent your emial address"
+        });
+
+
+    }
+
+    catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
 }
