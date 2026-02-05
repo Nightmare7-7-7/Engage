@@ -24,4 +24,4 @@ export const registerValidator = z.object({
 export const loginValidator = z.object({
     email: z.string(msgs.empty_email).email(msgs.invalid_email),
     password: z.string(msgs.empty_password)
-});
+},msgs.json_err);
