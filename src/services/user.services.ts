@@ -1,6 +1,7 @@
 import { prisma } from "../configs/client"
 import { GotErr } from "../utils/error";
 import { hash } from "../utils/hash";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 
 type UserData = {
     fullname: string;
@@ -56,5 +57,17 @@ export const RegisterUser = async ({ fullname, username, email, password, profil
     }
 
     return user
+
+}
+
+
+//first upload profile image will be triggred by frontend later it will comeup with combining create-account profile_picture field 
+export const UploadImage = async (image:Buffer) =>{
+    const imageUrl = await uploadToCloudinary(
+        image,
+        "profile_pics"
+    );
+
+    return imageUrl;
 
 }
