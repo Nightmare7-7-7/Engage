@@ -5,7 +5,8 @@ const secret:string = process.env.JWT_SECRET as string
 export const Sign = (
     payload:object,
     expire:jwt.SignOptions={expiresIn: '1h'}
-) => jwt.sign(payload,secret,expire);
+) => {return jwt.sign(payload,secret,expire);}
+
 
 
 
