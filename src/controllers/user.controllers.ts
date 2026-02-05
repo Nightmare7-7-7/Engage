@@ -1,4 +1,4 @@
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 import { RegisterUser, LoginUser, UploadImage } from "../services/user.services";
 import { loginValidator, registerValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
@@ -57,6 +57,12 @@ export const Login = async (req: Request, res: Response) => {
 
         const user = await LoginUser(email, password);
 
+        //send cookie in response
+        res.cookie("auth_token", user.auth_token, {
+            maxAge: 18 * 24 * 60 * 60 * 1000, // 18 days in milliseconds
+            httpOnly: true,
+            secure: true
+        });
         return res.status(200).json({
             success: true,
             message: `Hello,${user.fullname} you have been loggedIn successfully`,
@@ -80,7 +86,6 @@ export const Login = async (req: Request, res: Response) => {
                 message: err.message
             });
         }
-
 
         return res.status(500).json({
             success: false,
@@ -129,4 +134,13 @@ export const UploadProfile = async (req: Request, res: Response) => {
 }
 
 
+export const Logout = async (req:Request,res: Response) => {
 
+    // clear auth token on logout action
+    res.clearCookie("auth_token");
+
+    return res.status(200).json({
+        success:true,
+        message: "You have been loggedOut successfully"
+    });
+}
