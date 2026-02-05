@@ -19,3 +19,9 @@ export const registerValidator = z.object({
     password: z.string(msgs.empty_password).min(6,msgs.short_password),
     profile_picture: z.string().optional()
 },msgs.json_err);
+
+
+export const loginValidator = z.object({
+    email: z.string(msgs.empty_email).email(msgs.invalid_email),
+    password: z.string(msgs.empty_password)
+});
