@@ -8,4 +8,5 @@ const userRoutes = Router()
 userRoutes.post("/user/account/create",Register);
 userRoutes.post("/user/acount/profile-picture",uploadImage.single("image"),UploadProfile);
 userRoutes.post("/user/account/login",Login);
+
 export default userRoutes;

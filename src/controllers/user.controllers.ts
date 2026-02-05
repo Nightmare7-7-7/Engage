@@ -1,6 +1,6 @@
 import { success, ZodError } from "zod";
-import { RegisterUser , UploadImage } from "../services/user.services";
-import { registerValidator } from "../validators/user.validators";
+import { RegisterUser, LoginUser, UploadImage } from "../services/user.services";
+import { loginValidator, registerValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
 
@@ -49,11 +49,58 @@ export const Register = async (req: Request, res: Response) => {
     }
 }
 
+
+
+export const Login = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = loginValidator.parse(req.body);
+
+        const user = await LoginUser(email, password);
+
+        return res.status(200).json({
+            success: true,
+            message: `Hello,${user.fullname} you have been loggedIn successfully`,
+            data: {
+                user
+            }
+        });
+
+
+    } catch (err: any) {
+        if (err instanceof ZodError) {
+            return res.status(400).json({
+                success: false,
+                message: err.issues[0].message
+            });
+        }
+
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+
+    }
+
+
+}
+
+
+
+
 export const UploadProfile = async (req: Request, res: Response) => {
     try {
 
-        if(!req.file){
-            throw new GotErr(400,"Please upload valid profile image")
+        if (!req.file) {
+            throw new GotErr(400, "Please upload valid profile image")
         }
 
         // UploadImage will return profile picture image url 
@@ -80,3 +127,6 @@ export const UploadProfile = async (req: Request, res: Response) => {
 
     }
 }
+
+
+
