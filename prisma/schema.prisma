@@ -37,6 +37,8 @@ model User {
   likes Like[]
   comments Comment[]
   is_admin Boolean @default(false)
+  reset_code_hash String?
+  reset_code_expiry DateTime?
 
 }
 
