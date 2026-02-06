@@ -39,6 +39,7 @@ model User {
   is_admin Boolean @default(false)
   reset_code_hash String?
   reset_code_expiry DateTime?
+  email_verification_hash String?
 
 }
 
