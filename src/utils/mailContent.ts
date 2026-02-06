@@ -29,7 +29,7 @@ export const forgotPasswordCodeContent = (code: string) => {
 
 
 export const verifyEmailContent = (token: string) => {
-    const verifyLink = `http://localhost:8181/user/account/verify-email?token=${token}`;
+    const verifyLink = `http://localhost:8181/api/v1/user/account/verify-email?token=${token}`;
     
     return `
 <div style="font-family:Arial,sans-serif;max-width:500px;margin:auto;padding:20px;background:#f9f9f9">
