@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken } from "../services/user.services";
 import { loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -224,6 +224,34 @@ export const EmailVerification = async (req: Request, res: Response) => {
     }
 
     catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const VerfyEmail = async (req: Request, res: Response) => {
+    try {
+        const token = req.query.token;
+
+        await VerfyEmailToken(String(token));
+
+        return res.status(200).json({
+            success: true,
+            message: "Your email has been successfully verified"
+        });
+        
+    } catch (err: any) {
+
         if (err instanceof GotErr) {
             return res.status(err.code).json({
                 success: false,

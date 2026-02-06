@@ -283,3 +283,39 @@ export const SendVerifyEmail = async (email: string) => {
         throw new Error("Internal Server Error try later");
     }
 }
+
+
+export const VerfyEmailToken = async (token: string) => {
+
+    if (!token || token === 'undefined' || token === 'null') {
+        throw new GotErr(400, "Please send your email verification token");
+    }
+
+    //search for token 
+    const verify = await prisma.user.findFirst({
+        where: {
+            email_verification_hash: token
+        }
+    });
+
+    if (!verify) {
+        throw new GotErr(400, "Invalid email verification token")
+    }
+
+    //if the correct token then update the email_verified to true
+    const user = await prisma.user.update({
+        where: {
+            id: verify.id
+        },
+        data: {
+            email_verified: true,
+            email_verification_hash: null
+        }
+    });
+
+    if (!user) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    return;
+}
