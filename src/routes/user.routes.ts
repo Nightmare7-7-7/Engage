@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ForgetPassword, Login, Logout, Register, ResetPassword, UploadProfile } from "../controllers/user.controllers";
+import { EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, UploadProfile } from "../controllers/user.controllers";
 import { uploadImage } from "../middlewares/multer";
 import RateLimiter from "../utils/rateLimiter";
 
@@ -12,5 +12,5 @@ userRoutes.post("/user/account/login",RateLimiter(10),Login);
 userRoutes.get("/user/account/logout",Logout);
 userRoutes.post("/user/account/forget-password",RateLimiter(5),ForgetPassword);
 userRoutes.post("/user/account/reset-password",RateLimiter(25),ResetPassword);
-
+userRoutes.post("/user/account/email-verification",RateLimiter(8),EmailVerification);
 export default userRoutes;

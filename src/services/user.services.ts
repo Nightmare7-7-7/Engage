@@ -5,7 +5,7 @@ import { compare, hash } from "../utils/hash";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import crypto from "crypto"
 import mailer from "../utils/mailer";
-import forgotPasswordCodeContent from "../utils/mailContent";
+import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
 
 type UserData = {
     fullname: string;
@@ -237,4 +237,49 @@ export const VerfyCode = async (email: string, newPassword: string, verfyCode: N
     return;
 
 
+}
+
+export const SendVerifyEmail = async (email: string) => {
+    if (!email) {
+        throw new GotErr(400, "email shouldnt be empty");
+    }
+
+    // basic fragile valid email check 
+    if (!email.includes("@")) {
+        throw new GotErr(400, "'please provide a valid email address");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!user) {
+        throw new GotErr(400, "User with this email doesn't exists please kindly provide a valid one");
+    }
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    //send email+random 6digits code hash for more enhanced security
+    const hash = crypto.createHash("sha256").update(email + code).digest('hex');
+
+    const mail = await mailer.sendMail({
+        from: process.env.EMAIL,
+        to: user.email,
+        subject: "Email verification link",
+        html: verifyEmailContent(hash)
+    });
+
+    if (!mail) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    const savehash = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            email_verification_hash: hash
+        }
+    });
+
+    if (!savehash) {
+        throw new Error("Internal Server Error try later");
+    }
 }

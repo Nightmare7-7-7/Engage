@@ -1,5 +1,5 @@
-import { includes, success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode } from "../services/user.services";
+import { ZodError } from "zod";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail } from "../services/user.services";
 import { loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -183,10 +183,10 @@ export const ResetPassword = async (req: Request, res: Response) => {
         await VerfyCode(email, newPassword, verfyCode);
 
         return res.status(200).json({
-            success:true,
+            success: true,
             message: "Password has been reseted successfully"
         });
-        
+
 
     } catch (err: any) {
         if (err instanceof ZodError) {
@@ -208,5 +208,32 @@ export const ResetPassword = async (req: Request, res: Response) => {
             message: err.message
         });
 
+    }
+}
+
+
+export const EmailVerification = async (req: Request, res: Response) => {
+    try {
+        const { email } = req.body
+        await SendVerifyEmail(email);
+
+        return res.status(200).json({
+            success: true,
+            message: "Email Verification token has been successfully sent your emial address"
+        });
+    }
+
+    catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
     }
 }
