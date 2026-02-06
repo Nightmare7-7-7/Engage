@@ -131,7 +131,7 @@ export const SendCode = async (email: string) => {
         throw new GotErr(400, "email shouldnt be empty");
     }
 
-    
+
     // basic fragile valid email check 
     if (!email.includes("@")) {
         throw new GotErr(400, "'please provide a valid email address");
@@ -181,4 +181,60 @@ export const SendCode = async (email: string) => {
 
     return;
 
-} 
+}
+
+
+
+export const VerfyCode = async (email: string, newPassword: string, verfyCode: Number) => {
+    const userExists = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!userExists) {
+        throw new GotErr(400, "User with this email doesn't exists please kindly provide a valid one");
+    }
+
+    //check if reset code exists in db
+    if (!userExists.reset_code_hash) {
+        throw new GotErr(400, "Given verification code has been expired please initiate a new one")
+    }
+
+    const cryptohash = crypto.createHash("sha256").update(String(verfyCode)).digest("hex");
+
+    //compare db hashcode and user given code hash 
+    if (cryptohash !== userExists.reset_code_hash) {
+        throw new GotErr(400, "Invalid verification code");
+    }
+
+    if (!userExists.reset_code_expiry) {
+        throw new GotErr(400, "Given verification code has been expired please initiate a new one");
+    }
+
+    const currentDate = new Date();
+
+    //check if reset code has been expired
+    if (currentDate > userExists.reset_code_expiry) {
+        throw new GotErr(400, "Given verification code has been expired please initiate a new one");
+    }
+
+    const hashed = await hash(newPassword);
+
+    if (!hashed) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    const updatePassword = await prisma.user.update({
+        where: { id: userExists.id },
+        data: {
+            password: hashed
+        }
+    });
+
+    if (!updatePassword) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    return;
+
+
+}

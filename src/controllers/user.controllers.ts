@@ -1,6 +1,6 @@
 import { includes, success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode } from "../services/user.services";
-import { loginValidator, registerValidator } from "../validators/user.validators";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode } from "../services/user.services";
+import { loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
 
@@ -151,8 +151,7 @@ export const ForgetPassword = async (req: Request, res: Response) => {
 
         const { email } = req.body
 
-
-        const code = await SendCode(email);
+        await SendCode(email);
 
         return res.status(200).json({
             success: true,
@@ -174,5 +173,40 @@ export const ForgetPassword = async (req: Request, res: Response) => {
             success: false,
             message: err.message
         });
+    }
+}
+
+
+export const ResetPassword = async (req: Request, res: Response) => {
+    try {
+        const { email, newPassword, verfyCode } = ResetPassValidator.parse(req.body);
+        await VerfyCode(email, newPassword, verfyCode);
+
+        return res.status(200).json({
+            success:true,
+            message: "Password has been reseted successfully"
+        });
+        
+
+    } catch (err: any) {
+        if (err instanceof ZodError) {
+            return res.status(400).json({
+                success: false,
+                message: err.issues[0].message
+            });
+        }
+
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
     }
 }
