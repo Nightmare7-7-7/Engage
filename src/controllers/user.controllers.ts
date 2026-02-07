@@ -1,5 +1,5 @@
-import { ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken } from "../services/user.services";
+import { success, ZodError } from "zod";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo } from "../services/user.services";
 import { loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -249,9 +249,50 @@ export const VerfyEmail = async (req: Request, res: Response) => {
             success: true,
             message: "Your email has been successfully verified"
         });
-        
+
     } catch (err: any) {
 
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+
+
+interface IUser {
+    id: number,
+    fullname: string,
+    username: string,
+    email: string,
+    is_admin: boolean,
+    email_verified: boolean,
+    iat: number,
+    exp: number
+}
+
+export const SelfInfo = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+
+        const info = await GetSelfInfo(user.id);
+
+        return res.status(200).json({
+            success: true,
+            message: "UserInfo has been gathered successfully",
+            data: info
+        });
+
+    } catch (err: any) {
         if (err instanceof GotErr) {
             return res.status(err.code).json({
                 success: false,

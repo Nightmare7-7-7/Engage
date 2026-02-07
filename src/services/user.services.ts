@@ -6,6 +6,7 @@ import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import crypto from "crypto"
 import mailer from "../utils/mailer";
 import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
+import { JwtPayload } from "jsonwebtoken";
 
 type UserData = {
     fullname: string;
@@ -318,4 +319,41 @@ export const VerfyEmailToken = async (token: string) => {
     }
 
     return;
+}
+
+
+
+
+export const GetSelfInfo = async (id: number) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id
+        },
+
+        //also include user following and followers 
+        include: {
+            following: true,
+            followers: true
+        }
+    });
+
+    if (!user) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    // return user profile releted all infos for easy frontend use
+    return {
+        id: user.id,
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        profile_picture: user.profile_picture,
+        bio: user.bio,
+        active: user.active,
+        email_verified: user.email_verified,
+        following: user.following,
+        followers: user.followers,
+        is_admin: user.is_admin
+    }
+
 }
