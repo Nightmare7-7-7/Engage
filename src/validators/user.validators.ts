@@ -37,3 +37,10 @@ export const ResetPassValidator = z.object({
     newPassword: z.string(msgs.empty_newPassword).min(6, msgs.short_newPassword),
     verfyCode: z.number(msgs.empty_verfy_code).min(6, msgs.short_verfy_code)
 }, msgs.json_err);
+
+
+
+export const ChangePassValidator = z.object({
+    password: z.string(msgs.empty_password),
+    newPassword: z.string(msgs.empty_newPassword).min(6)
+},msgs.json_err);
