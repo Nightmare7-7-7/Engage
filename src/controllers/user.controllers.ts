@@ -1,6 +1,6 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo } from "../services/user.services";
-import { loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass } from "../services/user.services";
+import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
 
@@ -293,6 +293,44 @@ export const SelfInfo = async (req: Request, res: Response) => {
         });
 
     } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+
+export const ChangePassword = async (req: Request, res: Response) => {
+    try {
+
+        const { password, newPassword } = ChangePassValidator.parse(req.body);
+
+        const user = req.user as IUser;
+
+        const change = await ChangePass(password, newPassword, user.id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Your password has been changed successfully"
+        });
+
+    } catch (err: any) {
+        if (err instanceof ZodError) {
+            return res.status(400).json({
+                success: false,
+                message: err.issues[0].message
+            });
+        }
+
         if (err instanceof GotErr) {
             return res.status(err.code).json({
                 success: false,

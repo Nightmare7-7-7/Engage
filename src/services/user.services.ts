@@ -330,13 +330,14 @@ export const GetSelfInfo = async (id: number) => {
             id
         },
 
-        //also include user following and followers 
+        // also include user following and followers 
         include: {
             following: true,
             followers: true
         }
     });
 
+    // even after passing authentication middleware if user fails that means something is wrong
     if (!user) {
         throw new Error("Internal Server Error try later");
     }
@@ -355,5 +356,44 @@ export const GetSelfInfo = async (id: number) => {
         followers: user.followers,
         is_admin: user.is_admin
     }
+
+}
+
+
+export const ChangePass = async (password: string, newPassword: string, id: number) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id
+        }
+    });
+
+    // even after passing authentication middleware if user fails that means something is wrong 
+    if (!user) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    //compare the pasword with the actual user password from db
+    const passMatch = await compare(password, user.password);
+
+    if (!passMatch) {
+        throw new GotErr(400, "Invalid password entered")
+    }
+
+    //hash and reupdate the password in db
+    const newHash = await hash(newPassword);
+
+    const save = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            password: newHash
+        }
+    });
+
+    if (!save) {
+        throw new Error("Internal Server Error try later");
+    }
+
+    return;
+
 
 }
