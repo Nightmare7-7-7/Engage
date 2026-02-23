@@ -397,3 +397,29 @@ export const ChangePass = async (password: string, newPassword: string, id: numb
 
 
 }
+
+export const userPosts = async (user_id: number) => {
+    const posts = await prisma.post.findMany({
+        where:{
+            creator_id: user_id
+        },
+
+        select:{
+            id: true,
+            caption: true,
+            content_url: true,
+            likes: true,
+            comments: true,
+            saves: true,
+            visibility: true,
+        },
+          
+    });
+
+
+    if(!posts){
+        throw new GotErr(404, "No posts found for this user");
+    }
+
+    return posts;
+}

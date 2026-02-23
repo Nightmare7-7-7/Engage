@@ -1,5 +1,5 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass,userPosts } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -336,6 +336,33 @@ export const ChangePassword = async (req: Request, res: Response) => {
                 success: false,
                 message: err.message
             });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+export const GetPosts = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+
+        const posts = await userPosts(user.id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Posts retrieved successfully",
+            posts
+        })
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
         }
 
         return res.status(500).json({
