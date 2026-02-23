@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import "dotenv/config"
 import userRoutes from './routes/user.routes';
 import rateLimit from "express-rate-limit"
-
+import postRoutes from './routes/post.routes';
 //init global rate limiter 
 const limiter = rateLimit({
     windowMs:15 * 60 * 1000,
@@ -33,3 +33,4 @@ app.listen((port),()=>{
 //api paths
 
 app.use("/api/v1",userRoutes);
+app.use("/api/v1/post", postRoutes);
