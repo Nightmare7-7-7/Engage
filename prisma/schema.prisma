@@ -50,8 +50,8 @@ enum status {
 
 model Post {
   id Int @id  @default(autoincrement())
-  caption String
-  content_url String
+  caption String?
+  content_url String?
   creator User @relation(fields: [creator_id], references: [id])
   creator_id Int
   likes Like[]
