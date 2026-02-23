@@ -345,7 +345,7 @@ export const ChangePassword = async (req: Request, res: Response) => {
     }
 }
 
-export const GetPosts = async (req: Request, res: Response) => {
+export const GetUserPosts = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
 
