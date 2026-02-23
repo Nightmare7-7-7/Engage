@@ -31,3 +31,18 @@ export const uploadVideo = multer({
     }
   },
 });
+
+
+export const uploadMedia = multer({
+  storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB
+  },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith("video/") && !file.mimetype.startsWith("image/")) {
+      cb(null, false);
+    } else {
+      cb(null, true);
+    }
+  },
+});
