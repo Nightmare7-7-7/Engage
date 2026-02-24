@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPosts } from "../services/post.services";
+import { Create, GetPost, GetPosts } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -40,7 +40,7 @@ export const CreatePost = async (req: Request, res: Response) => {
                 success: false,
                 message: err.message
             });
-           
+
         }
 
         return res.status(500).json({
@@ -74,6 +74,34 @@ export const GetAllPosts = async (req: Request, res: Response) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error"
+        });
+    }
+}
+
+
+export const GetPostById = async (req: Request, res: Response) => {
+    try {
+        const post_id = req.query.post_id;
+        const post = await GetPost(Number(post_id));
+
+        return res.status(200).json({
+            success: true,
+            message: "Post has been retrieved successfully",
+            data: post
+        });
+        
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
         });
     }
 }

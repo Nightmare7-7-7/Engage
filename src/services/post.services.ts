@@ -1,6 +1,7 @@
 import { GotErr } from "../utils/error"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { prisma } from "../configs/client";
+import { number } from "zod";
 
 
 
@@ -110,4 +111,42 @@ export const GetPosts = async () => {
     }
 
     return posts;
+}
+
+
+export const GetPost = async (post_id: number) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "post_id is required");
+    }
+
+
+    const post = await prisma.post.findUnique({
+        where: {
+            id: post_id,
+            visibility: "Public"
+        },
+        select: {
+            id: true,
+            caption: true,
+            content_url: true,
+            creator: {
+                select: {
+                    id: true,
+                    fullname: true,
+                    username: true,
+                    profile_picture: true
+                }
+            },
+            likes: true,
+            comments: true,
+            saves: true
+        }
+    });
+
+    if (!post) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    return post;
 }
