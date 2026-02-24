@@ -139,7 +139,6 @@ export const GetPost = async (post_id: number) => {
                     profile_picture: true
                 }
             },
-            comments: true,
             saves: true
         }
     });
@@ -160,6 +159,24 @@ export const GetPost = async (post_id: number) => {
                     id: true,
                     fullname: true,
                     username: true,
+                    profile_picture: true
+                }
+            }
+        }
+    });
+
+    const comments = await prisma.comment.findMany({
+        where:{
+            commented_id: post_id
+        },
+        select: {
+            comment: true,
+            commenter: {
+                select:{
+                    id: true,
+                    fullname: true,
+                    username: true,
+                    profile_picture: true
                 }
             }
         }
@@ -168,7 +185,12 @@ export const GetPost = async (post_id: number) => {
 
     return {
         ...post,
-        likers: likers.map(like => like.liker)
+        saves: post.saves.length,
+        likers: likers.map(like => like.liker),
+        comments: comments.map(comment => ({
+            comment: comment.comment,
+            commenter: comment.commenter
+        }))
     };
 }
 
