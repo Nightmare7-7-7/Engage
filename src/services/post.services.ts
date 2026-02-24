@@ -1,3 +1,4 @@
+import { CommentPost } from './../controllers/post.controllers';
 import { GotErr } from "../utils/error"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { prisma } from "../configs/client";
@@ -121,7 +122,7 @@ export const GetPost = async (post_id: number) => {
     }
 
     // logic to get the post from database with the given post_id and return it
-    
+
     const post = await prisma.post.findUnique({
         where: {
             id: post_id,
@@ -146,7 +147,7 @@ export const GetPost = async (post_id: number) => {
     if (!post) {
         throw new GotErr(404, "post with this id not found");
     }
-    
+
     // get the likers of the post
 
     const likers = await prisma.like.findMany({
@@ -166,13 +167,13 @@ export const GetPost = async (post_id: number) => {
     });
 
     const comments = await prisma.comment.findMany({
-        where:{
+        where: {
             commented_id: post_id
         },
         select: {
             comment: true,
             commenter: {
-                select:{
+                select: {
                     id: true,
                     fullname: true,
                     username: true,
@@ -462,4 +463,40 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
 
 
 
+}
+
+export const Comment = async (user_id: number, post_id: number, comment: string) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "id is required")
+    }
+
+    if (!comment) {
+        throw new GotErr(400, "comment shouldn't be empty")
+    }
+
+    const post = await prisma.post.findUnique({
+        where: {
+            id: post_id
+        }
+    });
+
+    if (!post) {
+        throw new GotErr(404, "post with this id not found")
+    }
+
+    const CommentPost = await prisma.comment.create({
+        data: {
+            comment,
+            commenter_id: user_id,
+            commented_id: post.id
+
+        }
+    });
+
+    if (!CommentPost) {
+        throw new Error("Failed to delete the post")
+    }
+
+    return CommentPost;
 }

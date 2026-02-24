@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import { CreatePost, DeletePost, GetAllPosts, GetPostById, LikePost, UpdatePost } from '../controllers/post.controllers'
+import { CommentPost, CreatePost, DeletePost, GetAllPosts, GetPostById, LikePost, UpdatePost } from '../controllers/post.controllers'
 import { AuthCheck } from '../middlewares/auth.middleware';
 import { uploadMedia } from '../middlewares/multer';
 import { multerWrapper } from '../middlewares/multerWrapper';
+import RateLimiter from '../utils/rateLimiter';
 
 const postRoutes = Router()
 
@@ -13,6 +14,8 @@ postRoutes.get('/get/all', GetAllPosts);
 postRoutes.get('/get', GetPostById);
 postRoutes.put('/update', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, UpdatePost);
 postRoutes.delete('/delete', AuthCheck, DeletePost);
-postRoutes.get('/like', AuthCheck,LikePost);
+postRoutes.get('/like', AuthCheck, LikePost);
 
+// comment related paths
+postRoutes.post('/comment/create', AuthCheck, RateLimiter(30), CommentPost);
 export default postRoutes;

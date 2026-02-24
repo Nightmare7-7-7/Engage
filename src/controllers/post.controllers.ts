@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -215,3 +215,37 @@ export const LikePost = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const CommentPost = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const { id, comment } = req.body;
+
+        const postComment = await Comment(user.id, Number(id), comment);
+
+        return res.status(201).json({
+            success: true,
+            message: "Commented successfully",
+            data: postComment
+        });
+
+
+
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
