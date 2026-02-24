@@ -80,3 +80,34 @@ export const Create = async (creator_id: number, caption?: string, media?: Buffe
 }
 
 
+export const GetPosts = async () => {
+    const posts = await prisma.post.findMany(
+        {
+            where: {
+                visibility: "Public"
+            },
+            select: {
+                id: true,
+                caption: true,
+                content_url: true,
+                creator: {
+                    select: {
+                        id: true,
+                        fullname: true,
+                        username: true,
+                        profile_picture: true
+                    }
+                },
+                likes: true,
+                comments: true,
+                saves: true
+            }
+        }
+    );
+
+    if (!posts) {
+        throw new GotErr(404, "No posts found");
+    }
+
+    return posts;
+}
