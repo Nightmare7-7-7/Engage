@@ -171,6 +171,7 @@ export const GetPost = async (post_id: number) => {
             commented_id: post_id
         },
         select: {
+            id: true,
             comment: true,
             commenter: {
                 select: {
@@ -499,4 +500,38 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
     }
 
     return CommentPost;
+}
+
+
+export const CommentDelete = async (user_id: number, comment_id: number) => {
+
+    if (!comment_id) {
+        throw new GotErr(400, "comment id is required")
+    }
+
+    const existingComment = await prisma.comment.findUnique({
+        where:{
+            id: comment_id
+        }
+    });
+
+    if(!existingComment){
+        throw new GotErr(404, "comment with this id not found");
+    }
+
+    if(existingComment.commenter_id !== user_id){
+        throw new GotErr(403, "You are not authorized to delete others comment");
+    }
+
+    const del = await prisma.comment.delete({
+        where:{
+            id: comment_id
+        }
+    });
+
+    if(!del){
+        throw new Error("Failed to delete the comment");
+    }
+
+    return del;
 }
