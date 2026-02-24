@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { CreatePost, GetAllPosts, GetPostById, UpdatePost } from '../controllers/post.controllers'
+import { CreatePost, DeletePost, GetAllPosts, GetPostById, UpdatePost } from '../controllers/post.controllers'
 import { AuthCheck } from '../middlewares/auth.middleware';
 import { uploadMedia } from '../middlewares/multer';
 import { multerWrapper } from '../middlewares/multerWrapper';
@@ -12,4 +12,5 @@ postRoutes.post('/create', multerWrapper(uploadMedia.single("media"), "media"), 
 postRoutes.get('/get/all', GetAllPosts);
 postRoutes.get('/get', GetPostById);
 postRoutes.put('/update', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, UpdatePost);
+postRoutes.delete('/delete', AuthCheck, DeletePost);
 export default postRoutes;

@@ -276,7 +276,7 @@ export const Update = async (user_id: number, post_id: number, caption?: string,
         return post;
     }
 
-    
+
 
     if (visibility !== Visibility.Public && visibility !== Visibility.Private) {
         throw new GotErr(400, "Invalid visibility value");
@@ -293,4 +293,39 @@ export const Update = async (user_id: number, post_id: number, caption?: string,
 
     return post;
 
+}
+
+
+export const Delete = async (user_id: number, post_id: number) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "post id is required");
+    }
+
+    
+    const existingPost = await prisma.post.findUnique({
+        where: {
+            id: post_id
+        }
+    });
+
+    if (!existingPost) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    if (existingPost.creator_id !== user_id) {
+        throw new GotErr(403, "You are not authorized to delete others post");
+    }
+
+    const post = await prisma.post.delete({
+        where: {
+            id: post_id
+        }
+    });
+
+    if (!post) {
+        throw new Error("Failed to delete the post");
+    }
+
+    return post;
 }

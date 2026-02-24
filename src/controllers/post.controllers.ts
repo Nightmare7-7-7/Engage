@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -134,6 +134,38 @@ export const UpdatePost = async (req: Request, res: Response) => {
         return res.status(200).json({
             success: true,
             message: "Post updated successfully",
+            data: post
+        });
+
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const DeletePost = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+
+        const post_id = req.query.post_id;
+
+        const post = await Delete(user.id, Number(post_id));
+
+        return res.status(200).json({
+            success: true,
+            message: "Post deleted successfully",
             data: post
         });
 
