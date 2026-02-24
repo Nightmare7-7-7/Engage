@@ -150,3 +150,147 @@ export const GetPost = async (post_id: number) => {
 
     return post;
 }
+
+enum Visibility {
+    Public = "Public",
+    Private = "Private",
+}
+
+export const Update = async (user_id: number, post_id: number, caption?: string, media?: Buffer, visibility?: Visibility) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "post id is required");
+    }
+
+    if (!caption && !media && !visibility) {
+        throw new GotErr(400, "At least one field is required to update the post");
+    }
+
+    const existingPost = await prisma.post.findUnique({
+        where: {
+            id: post_id
+        }
+    });
+
+    if (!existingPost) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    if (existingPost.creator_id !== user_id) {
+        throw new GotErr(403, "You are not authorized to update others post");
+    }
+
+    if (caption) {
+        if (media && visibility) {
+            const mediaUrl = await uploadToCloudinary(media, "post_media");
+            const post = await prisma.post.update({
+                where: {
+                    id: post_id
+                },
+                data: {
+                    caption,
+                    content_url: mediaUrl,
+                    visibility
+                }
+            });
+
+            return post;
+        }
+
+        if (media) {
+            const mediaUrl = await uploadToCloudinary(media, "post_media");
+            const post = await prisma.post.update({
+                where: {
+                    id: post_id
+                },
+                data: {
+                    caption,
+                    content_url: mediaUrl
+                }
+            });
+
+            return post;
+        }
+
+        if (visibility) {
+
+            if (visibility !== Visibility.Public && visibility !== Visibility.Private) {
+                throw new GotErr(400, "Invalid visibility value");
+            }
+
+
+            const post = await prisma.post.update({
+                where: {
+                    id: post_id
+                },
+                data: {
+                    caption,
+                    visibility
+                }
+            });
+            return post;
+        }
+
+        const post = await prisma.post.update({
+            where: {
+                id: post_id
+            },
+            data: {
+                caption
+            }
+        });
+
+        return post;
+    }
+
+    if (media) {
+        const mediaUrl = await uploadToCloudinary(media, "post_media");
+
+        if (visibility) {
+
+            if (visibility !== Visibility.Public && visibility !== Visibility.Private) {
+                throw new GotErr(400, "Invalid visibility value");
+            }
+
+
+            const post = await prisma.post.update({
+                where: {
+                    id: post_id
+                },
+                data: {
+                    content_url: mediaUrl,
+                    visibility
+                }
+            });
+            return post;
+        }
+
+        const post = await prisma.post.update({
+            where: {
+                id: post_id
+            },
+            data: {
+                content_url: mediaUrl
+            }
+        })
+        return post;
+    }
+
+    
+
+    if (visibility !== Visibility.Public && visibility !== Visibility.Private) {
+        throw new GotErr(400, "Invalid visibility value");
+    }
+
+    const post = await prisma.post.update({
+        where: {
+            id: post_id
+        },
+        data: {
+            visibility
+        }
+    });
+
+    return post;
+
+}
