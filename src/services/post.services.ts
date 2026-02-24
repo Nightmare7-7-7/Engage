@@ -120,7 +120,8 @@ export const GetPost = async (post_id: number) => {
         throw new GotErr(400, "post_id is required");
     }
 
-
+    // logic to get the post from database with the given post_id and return it
+    
     const post = await prisma.post.findUnique({
         where: {
             id: post_id,
@@ -138,7 +139,6 @@ export const GetPost = async (post_id: number) => {
                     profile_picture: true
                 }
             },
-            likes: true,
             comments: true,
             saves: true
         }
@@ -147,8 +147,29 @@ export const GetPost = async (post_id: number) => {
     if (!post) {
         throw new GotErr(404, "post with this id not found");
     }
+    
+    // get the likers of the post
 
-    return post;
+    const likers = await prisma.like.findMany({
+        where: {
+            liked_id: post_id
+        },
+        select: {
+            liker: {
+                select: {
+                    id: true,
+                    fullname: true,
+                    username: true,
+                }
+            }
+        }
+    });
+
+
+    return {
+        ...post,
+        likers: likers.map(like => like.liker)
+    };
 }
 
 enum Visibility {
@@ -351,7 +372,7 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
     }
 
     // only public posts can be liked or unliked
-    
+
     if (existingPost.visibility !== Visibility.Public) {
         throw new GotErr(404, "post with this id not found");
     }
