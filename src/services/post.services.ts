@@ -302,7 +302,7 @@ export const Delete = async (user_id: number, post_id: number) => {
         throw new GotErr(400, "post id is required");
     }
 
-    
+
     const existingPost = await prisma.post.findUnique({
         where: {
             id: post_id
@@ -328,4 +328,95 @@ export const Delete = async (user_id: number, post_id: number) => {
     }
 
     return post;
+}
+
+
+export const LikeUnlikePost = async (user_id: number, post_id: number, action: string) => {
+
+    // action can be either "like" or "unlike"
+
+    if (!post_id || !action) {
+        throw new GotErr(400, "post_id and action are required");
+    }
+
+    const existingPost = await prisma.post.findUnique({
+        where: {
+            id: post_id
+        }
+    });
+
+
+    if (!existingPost) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    // only public posts can be liked or unliked
+    
+    if (existingPost.visibility !== Visibility.Public) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    // logic to like or unlike the post based on the action value
+
+    if (action === "like") {
+
+        const existingLike = await prisma.like.findUnique({
+            where: {
+                liker_id_liked_id: {
+                    liker_id: user_id,
+                    liked_id: post_id
+                }
+            }
+        });
+
+
+        if (existingLike) {
+            throw new GotErr(400, "You have already liked this post");
+        }
+
+
+        const like = await prisma.like.create({
+            data: {
+                liker_id: user_id,
+                liked_id: post_id,
+            }
+        });
+
+        return "post liked successfully";
+    }
+
+    if (action === "unlike") {
+
+        const existingLike = await prisma.like.findUnique({
+            where: {
+                liker_id_liked_id: {
+                    liker_id: user_id,
+                    liked_id: post_id
+                }
+            }
+        });
+
+        if (!existingLike) {
+            throw new GotErr(400, "You have not liked this post");
+        }
+
+        const unlike = await prisma.like.delete({
+            where: {
+                liker_id_liked_id: {
+                    liker_id: user_id,
+                    liked_id: post_id
+                }
+            }
+        });
+
+        return "post unliked successfully";
+    }
+
+    if (action !== "like" && action !== "unlike") {
+        throw new GotErr(400, "Invalid action value");
+    }
+
+
+
+
 }
