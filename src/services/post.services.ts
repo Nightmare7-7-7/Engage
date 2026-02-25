@@ -668,7 +668,10 @@ export const SaveUnsave = async (user_id: number, post_id: number, action: strin
 
         const unsave = await prisma.save.delete({
             where: {
-                id: existingSave.id
+                saver_id_post_id:{
+                    saver_id: user_id,
+                    post_id: post_id
+                }
             }
         });
 
