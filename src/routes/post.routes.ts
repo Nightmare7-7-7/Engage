@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { CommentPost, CreatePost, DeleteComment, DeletePost, GetAllPosts, GetPostById, LikePost, UpdatePost } from '../controllers/post.controllers'
+import { CommentPost, CreatePost, DeleteComment, DeletePost, GetAllPosts, GetPostById, LikePost, UpdateComment, UpdatePost } from '../controllers/post.controllers'
 import { AuthCheck } from '../middlewares/auth.middleware';
 import { uploadMedia } from '../middlewares/multer';
 import { multerWrapper } from '../middlewares/multerWrapper';
@@ -18,5 +18,6 @@ postRoutes.get('/like', AuthCheck, LikePost);
 
 // comment related paths
 postRoutes.post('/comment/create', AuthCheck, RateLimiter(30), CommentPost);
+postRoutes.put('/comment/update', AuthCheck, UpdateComment);
 postRoutes.delete('/comment/delete', AuthCheck, DeleteComment);
 export default postRoutes;

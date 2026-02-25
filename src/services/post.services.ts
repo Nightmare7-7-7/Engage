@@ -503,6 +503,54 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
 }
 
 
+export const CommentUpdate = async (user_id: number, comment_id: number, comment: string) => {
+
+    if (!comment_id) {
+        throw new GotErr(400, "comment id is required")
+    }
+
+    if (!comment) {
+        throw new GotErr(400, "comment shouldn't be empty")
+    }
+
+    const existingComment = await prisma.comment.findUnique({
+        where: {
+            id: comment_id
+        }
+    });
+
+    if (!existingComment) {
+        throw new GotErr(404, "comment with this id not found");
+    }
+
+    if (existingComment.commenter_id !== user_id) {
+        throw new GotErr(403, "You are not authorized to update others comment");
+    }
+
+    const updatedComment = await prisma.comment.update({
+        where: {
+            id: comment_id
+        },
+        data: {
+            comment
+        }
+    });
+
+    if (!updatedComment) {
+        throw new Error("Failed to update the comment");
+    }
+
+
+    return updatedComment;
+}
+
+
+
+
+
+
+
+
 export const CommentDelete = async (user_id: number, comment_id: number) => {
 
     if (!comment_id) {
@@ -510,26 +558,26 @@ export const CommentDelete = async (user_id: number, comment_id: number) => {
     }
 
     const existingComment = await prisma.comment.findUnique({
-        where:{
+        where: {
             id: comment_id
         }
     });
 
-    if(!existingComment){
+    if (!existingComment) {
         throw new GotErr(404, "comment with this id not found");
     }
 
-    if(existingComment.commenter_id !== user_id){
+    if (existingComment.commenter_id !== user_id) {
         throw new GotErr(403, "You are not authorized to delete others comment");
     }
 
     const del = await prisma.comment.delete({
-        where:{
+        where: {
             id: comment_id
         }
     });
 
-    if(!del){
+    if (!del) {
         throw new Error("Failed to delete the comment");
     }
 
