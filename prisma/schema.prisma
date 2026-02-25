@@ -36,6 +36,7 @@ model User {
   saved Save[]
   likes Like[]
   comments Comment[]
+  replies Reply[]
   is_admin Boolean @default(false)
   reset_code_hash String?
   reset_code_expiry DateTime?
@@ -94,8 +95,20 @@ model Like{
 model Comment {
   id Int @id  @default(autoincrement())
   comment String
+  likes Int @default(0)
   commented_id Int
   commenter_id Int
   commented Post @relation(fields: [commented_id],references: [id])
   commenter User @relation(fields: [commenter_id],references: [id])
+  replies Reply[]
+}
+
+
+model Reply {
+  id Int @id @default(autoincrement())
+  reply String
+  replied_id Int
+  replier_id Int
+  replied Comment @relation(fields: [replied_id], references: [id])
+  replier User @relation(fields: [replier_id], references: [id])
 }
