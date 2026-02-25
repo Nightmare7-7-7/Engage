@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -322,3 +322,35 @@ export const DeleteComment = async (req: Request, res: Response) => {
         });
     }
 }
+
+
+
+export const Save = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const { post_id, action } = req.query;
+
+        const save = await SaveUnsave(user.id, Number(post_id), action as string);
+
+        return res.status(200).json({
+            success: true,
+            message: save
+        });
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+

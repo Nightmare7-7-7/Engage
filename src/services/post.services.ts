@@ -394,7 +394,8 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
 
     const existingPost = await prisma.post.findUnique({
         where: {
-            id: post_id
+            id: post_id,
+            visibility: "Public"
         }
     });
 
@@ -486,7 +487,8 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
 
     const post = await prisma.post.findUnique({
         where: {
-            id: post_id
+            id: post_id,
+            visibility: "Public"
         }
     });
 
@@ -590,4 +592,94 @@ export const CommentDelete = async (user_id: number, comment_id: number) => {
     }
 
     return del;
+}
+
+
+
+
+export const SaveUnsave = async (user_id: number, post_id: number, action: string) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "post_id is required");
+    }
+
+    if (!action) {
+        throw new GotErr(400, "action is required");
+    }
+
+
+    if (action !== "save" && action !== "unsave") {
+        throw new GotErr(400, "Invalid action value");
+    }
+
+    // only public posts can be saved or unsaved
+    const existingPost = await prisma.post.findUnique({
+        where: {
+            id: post_id,
+            visibility: "Public"
+        }
+    });
+
+    if (!existingPost) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+
+    const existingSave = await prisma.save.findUnique({
+        where: {
+            saver_id_post_id: {
+                saver_id: user_id,
+                post_id: post_id
+            }
+        }
+    });
+
+
+
+
+    if (action === "save") {
+
+
+        if (existingSave) {
+            throw new GotErr(400, "post is already saved");
+        }
+
+        const save = await prisma.save.create({
+            data: {
+                saver_id: user_id,
+                post_id: post_id
+            }
+        });
+
+
+        if (!save) {
+            throw new Error("Failed to save the post");
+        }
+
+        return "post saved successfully";
+    }
+
+
+    if (action === "unsave") {
+
+        if (!existingSave) {
+            throw new GotErr(400, "post is not saved");
+        }
+
+        const unsave = await prisma.save.delete({
+            where: {
+                id: existingSave.id
+            }
+        });
+
+        if (!unsave) {
+            throw new Error("Failed to unsave the post");
+        }
+
+
+        return "post unsaved successfully";
+    }
+
+
+
 }
