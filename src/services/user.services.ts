@@ -400,11 +400,11 @@ export const ChangePass = async (password: string, newPassword: string, id: numb
 
 export const userPosts = async (user_id: number) => {
     const posts = await prisma.post.findMany({
-        where:{
+        where: {
             creator_id: user_id
         },
 
-        select:{
+        select: {
             id: true,
             caption: true,
             content_url: true,
@@ -413,13 +413,97 @@ export const userPosts = async (user_id: number) => {
             saves: true,
             visibility: true,
         },
-          
+
     });
 
 
-    if(!posts){
+    if (!posts) {
         throw new GotErr(404, "No posts found for this user");
     }
 
     return posts;
+}
+
+
+export const FollowUnfollow = async (user_id: number, folllowing_id: number, action: string) => {
+
+    if (!folllowing_id) {
+        throw new GotErr(400, "id is required");
+    }
+
+    if (!action) {
+        throw new GotErr(400, "action is required");
+    }
+
+    if (action !== "follow" && action !== "unfollow") {
+        throw new GotErr(400, "Invalid action value");
+    }
+
+    // prevent user not to follow or unfollow himself
+    if(user_id === folllowing_id){
+        throw new GotErr(400, "you can't follow/unfollow yourself")
+    }
+
+
+    const existingUser = await prisma.user.findUnique({
+        where: {
+            id: folllowing_id
+        }
+    });
+
+    if (!existingUser) {
+        throw new GotErr(404, "user with this id not found");
+    }
+
+    const existingFollow = await prisma.follow.findUnique({
+        where: {
+            follower_id_following_id: {
+                follower_id: user_id,
+                following_id: folllowing_id
+            }
+        }
+    });
+
+
+    if (action === "follow") {
+        if (existingFollow) {
+            throw new GotErr(400, "You have already followed this user")
+        }
+
+        const follow = await prisma.follow.create({
+            data: {
+                following_id: folllowing_id,
+                follower_id: user_id
+            }
+        });
+
+        if (!follow) {
+            throw new Error("Failed to follow the user");
+        }
+
+        return "user followed successfully"
+
+
+    }
+
+    if (action === "unfollow") {
+        if (!existingFollow) {
+            throw new GotErr(400, "You doesn't follow this user");
+        }
+
+        const unfollow = await prisma.follow.delete({
+            where: {
+                follower_id_following_id: {
+                    follower_id: user_id,
+                    following_id: folllowing_id
+                }
+            }
+        });
+
+        if (!unfollow) {
+            throw new Error("Failed to follow the user");
+        }
+
+        return "user unfollowed successfully"
+    }
 }
