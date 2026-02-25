@@ -1,5 +1,5 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass,userPosts } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -356,6 +356,39 @@ export const GetUserPosts = async (req: Request, res: Response) => {
             message: "Posts retrieved successfully",
             posts
         })
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const Follow = async (req: Request, res: Response) => {
+    try {
+
+        const user = req.user as IUser
+
+        const { id, action } = req.query
+
+        const follow = await FollowUnfollow(user.id, Number(id), action as string);
+
+        return res.status(200).json({
+            success: true,
+            message: follow
+        });
+
+
+
     } catch (err: any) {
         if (err instanceof GotErr) {
             return res.status(err.code).json({
