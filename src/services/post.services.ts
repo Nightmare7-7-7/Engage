@@ -83,6 +83,7 @@ export const Create = async (creator_id: number, caption?: string, media?: Buffe
 
 
 export const GetPosts = async () => {
+
     const posts = await prisma.post.findMany(
         {
             where: {
@@ -111,7 +112,14 @@ export const GetPosts = async () => {
         throw new GotErr(404, "No posts found");
     }
 
-    return posts;
+    return {
+        posts: posts.map(post => ({
+            ...post,
+            likes: post.likes.length,
+            comments: post.comments.length,
+            saves: post.saves.length
+        }))
+    };
 }
 
 
