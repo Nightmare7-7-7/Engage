@@ -668,7 +668,7 @@ export const SaveUnsave = async (user_id: number, post_id: number, action: strin
 
         const unsave = await prisma.save.delete({
             where: {
-                saver_id_post_id:{
+                saver_id_post_id: {
                     saver_id: user_id,
                     post_id: post_id
                 }
@@ -684,5 +684,45 @@ export const SaveUnsave = async (user_id: number, post_id: number, action: strin
     }
 
 
+
+}
+
+
+export const GetComments = async (post_id: number) => {
+
+    if (!post_id) {
+        throw new GotErr(400, "post_id is required")
+    }
+
+    const existingPost = await prisma.post.findUnique({
+        where: {
+            id: post_id,
+            visibility: "Public"
+        },
+        select:{
+            // get all the comments of the given post id
+            comments:{
+                select:{
+                    id: true,
+                    comment: true,
+                    likes: true,
+                    commenter: {
+                        select:{
+                            id: true,
+                            fullname: true,
+                            username: true,
+                            profile_picture: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!existingPost) {
+        throw new GotErr(404, "post with this id not found");
+    }
+
+    return existingPost.comments;
 
 }

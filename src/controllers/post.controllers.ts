@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -354,3 +354,30 @@ export const Save = async (req: Request, res: Response) => {
 }
 
 
+
+export const GetAllComments = async (req: Request, res: Response) => {
+    try {
+        const id = req.query.post_id
+
+        const comments = await GetComments(Number(id));
+
+        return res.status(200).json({
+            success: true,
+            message: "Comments has been retrieved successfully",
+            data: comments
+        })
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
