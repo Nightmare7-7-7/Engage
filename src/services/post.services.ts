@@ -148,6 +148,8 @@ export const GetPost = async (post_id: number) => {
                     profile_picture: true
                 }
             },
+            likes: true,
+            comments: true,
             saves: true
         }
     });
@@ -156,52 +158,15 @@ export const GetPost = async (post_id: number) => {
         throw new GotErr(404, "post with this id not found");
     }
 
-    // get the likers of the post
+    
 
-    const likers = await prisma.like.findMany({
-        where: {
-            liked_id: post_id
-        },
-        select: {
-            liker: {
-                select: {
-                    id: true,
-                    fullname: true,
-                    username: true,
-                    profile_picture: true
-                }
-            }
-        }
-    });
-
-    const comments = await prisma.comment.findMany({
-        where: {
-            commented_id: post_id
-        },
-        select: {
-            id: true,
-            comment: true,
-            commenter: {
-                select: {
-                    id: true,
-                    fullname: true,
-                    username: true,
-                    profile_picture: true
-                }
-            }
-        }
-    });
-
-
-    return {
+    return{
         ...post,
-        saves: post.saves.length,
-        likers: likers.map(like => like.liker),
-        comments: comments.map(comment => ({
-            comment: comment.comment,
-            commenter: comment.commenter
-        }))
-    };
+        // no need to return all the data insted return lengths later they will fetched using other api endpoints
+        likes: post.likes.length,
+        comments: post.comments.length,
+        saves: post.saves.length
+    }
 }
 
 enum Visibility {
