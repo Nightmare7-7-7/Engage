@@ -440,7 +440,7 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
     }
 
     // prevent user not to follow or unfollow himself
-    if(user_id === folllowing_id){
+    if (user_id === folllowing_id){
         throw new GotErr(400, "you can't follow/unfollow yourself")
     }
 
@@ -506,4 +506,41 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
 
         return "user unfollowed successfully"
     }
+}
+
+
+
+export const FindUser = async (user_id: number) => {
+
+    if(!user_id){
+        throw new GotErr(400,"id is required");
+    }
+
+    const user = await prisma.user.findUnique({
+        where:{
+            id: user_id
+        },
+        select:{
+            id: true,
+            fullname: true,
+            username: true,
+            profile_picture: true,
+            bio: true,
+            active: true,
+            following: true,
+            followers: true,
+        }
+    });
+
+    if(!user){
+        throw new GotErr(404, "user with this id not found");
+    }
+
+    return {
+        ...user,
+        following: user.following.length,
+        followers: user.followers.length
+    }
+    
+
 }
