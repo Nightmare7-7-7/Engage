@@ -158,9 +158,9 @@ export const GetPost = async (post_id: number) => {
         throw new GotErr(404, "post with this id not found");
     }
 
-    
 
-    return{
+
+    return {
         ...post,
         // no need to return all the data insted return lengths later they will fetched using other api endpoints
         likes: post.likes.length,
@@ -664,22 +664,24 @@ export const GetComments = async (post_id: number) => {
             id: post_id,
             visibility: "Public"
         },
-        select:{
+        select: {
             // get all the comments of the given post id
-            comments:{
-                select:{
+            comments: {
+                select: {
                     id: true,
                     comment: true,
                     likes: true,
                     commenter: {
-                        select:{
+                        select: {
                             id: true,
                             fullname: true,
                             username: true,
-                            profile_picture: true
+                            profile_picture: true,
+
                         }
                     }
-                }
+                },
+
             }
         }
     });
@@ -688,6 +690,123 @@ export const GetComments = async (post_id: number) => {
         throw new GotErr(404, "post with this id not found");
     }
 
-    return existingPost.comments;
+    return existingPost.comments.map(cmt => {
+        return {
+            id: cmt.id,
+            comment: cmt.comment,
+            commenter: cmt.commenter,
+            likes: cmt.likes.length
+        };
+    });
+
+}
+
+
+
+enum typeof_like {
+    Comment = "Comment",
+    Reply = "Reply"
+}
+
+
+
+export const CommentLike = async (user_id: number, comment_id: number, action: string) => {
+    if (!comment_id) {
+        throw new GotErr(400, "comment_id is required");
+    }
+
+    if (!action) {
+        throw new GotErr(400, "action is required");
+    }
+
+
+    if (action !== "like" && action !== "unlike") {
+        throw new GotErr(400, "Invalid action value");
+    }
+
+
+    const existingComment = await prisma.comment.findUnique({
+        where: {
+            id: comment_id
+        }
+    });
+
+    if (!existingComment) {
+        throw new GotErr(404, "comment with this id not found");
+    }
+
+    const existingLike = await prisma.cmtOrReplyLike.findUnique({
+        where: {
+            like_type: typeof_like.Comment,
+            liker_id_comment_id: {
+                liker_id: user_id,
+                comment_id: existingComment.id
+            }
+        }
+    });
+
+
+
+    if (action === "like") {
+
+        //check if user has already liked the comment
+        if (existingLike) {
+            throw new GotErr(400, "you have already liked this comment");
+        }
+
+        const like = await prisma.cmtOrReplyLike.create({
+            data: {
+                like_type: typeof_like.Comment,
+                comment_id: existingComment.id,
+                liker_id: user_id
+            },
+            select: {
+                id: true,
+                like_type: true,
+                liker_id: true,
+                comment_id: true
+            }
+        });
+
+        if (!like) {
+            throw new Error("Failed to like the comment");
+        }
+
+        return like;
+    }
+
+
+    if (action === "unlike") {
+
+        if (!existingLike) {
+            throw new GotErr(400, "you haven't liked this comment");
+        }
+
+        const unlike = await prisma.cmtOrReplyLike.delete({
+            where: {
+                like_type: typeof_like.Comment,
+                liker_id_comment_id: {
+                    liker_id: user_id,
+                    comment_id: existingComment.id
+                }
+            },
+            select: {
+                id: true,
+                like_type: true,
+                liker_id: true,
+                comment_id: true
+            }
+        });
+
+        if (!unlike) {
+            throw new Error("Failed to unlike the comment");
+        }
+
+        return unlike;
+
+
+    }
+
+
 
 }

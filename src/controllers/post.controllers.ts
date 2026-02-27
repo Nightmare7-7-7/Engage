@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike } from "../services/post.services";
 import { GotErr } from "../utils/error";
 
 type post = {
@@ -366,6 +366,39 @@ export const GetAllComments = async (req: Request, res: Response) => {
             message: "Comments has been retrieved successfully",
             data: comments
         })
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const LikeComment = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser
+        const { comment_id, action } = req.query
+
+        const like = await CommentLike(user.id, Number(comment_id), action as string);
+
+        //retutn message based on action type 
+        const msg = action === "like" ? "comment liked successfully" : "comment unliked successfully";
+
+        return res.status(200).json({
+            success: true,
+            message: msg,
+            data: like
+        });
+
     } catch (err: any) {
         if (err instanceof GotErr) {
             return res.status(err.code).json({
