@@ -37,6 +37,7 @@ model User {
   likes Like[]
   comments Comment[]
   replies Reply[]
+  comment_replies_likes CmtOrReplyLike[]
   is_admin Boolean @default(false)
   reset_code_hash String?
   reset_code_expiry DateTime?
@@ -95,7 +96,7 @@ model Like{
 model Comment {
   id Int @id  @default(autoincrement())
   comment String
-  likes Int @default(0)
+  likes CmtOrReplyLike[]
   commented_id Int
   commenter_id Int
   commented Post @relation(fields: [commented_id],references: [id])
@@ -111,4 +112,23 @@ model Reply {
   replier_id Int
   replied Comment @relation(fields: [replied_id], references: [id])
   replier User @relation(fields: [replier_id], references: [id])
+  likes CmtOrReplyLike[]
+}
+
+enum typeof_like {
+  Comment
+  Reply
+}
+
+model CmtOrReplyLike {
+  id Int @id @default(autoincrement())
+  like_type typeof_like
+  liker_id Int
+  comment_id Int?
+  reply_id Int?
+  liker User @relation(fields: [liker_id],references: [id])
+  comment Comment? @relation(fields: [comment_id],references: [id])
+  reply Reply? @relation(fields: [reply_id], references: [id])
+  @@unique([liker_id,comment_id])
+  @@unique([liker_id,reply_id])
 }
