@@ -671,6 +671,7 @@ export const GetComments = async (post_id: number) => {
                     id: true,
                     comment: true,
                     likes: true,
+                    replies: true,
                     commenter: {
                         select: {
                             id: true,
@@ -695,7 +696,8 @@ export const GetComments = async (post_id: number) => {
             id: cmt.id,
             comment: cmt.comment,
             commenter: cmt.commenter,
-            likes: cmt.likes.length
+            likes: cmt.likes.length,
+            replies: cmt.replies.length
         };
     });
 
@@ -929,4 +931,93 @@ export const DeleteReply = async (user_id: number, reply_id: number) => {
 
     return del;
 
+}
+
+
+
+export const LikeUnlikeReply = async (user_id: number, reply_id: number, action: string) => {
+    if (!reply_id) {
+        throw new GotErr(400, "reply_id is required")
+    }
+
+    if (!action) {
+        throw new GotErr(400, "action is required")
+    }
+
+    if (action !== "like" && action !== "unlike") {
+        throw new GotErr(400, "Invalid action value");
+    }
+
+    const existingReply = await prisma.reply.findUnique({
+        where: {
+            id: reply_id
+        }
+    });
+
+    if (!existingReply) {
+        throw new GotErr(404, "reply with this id not found")
+    }
+
+    const existingLike = await prisma.cmtOrReplyLike.findUnique({
+        where: {
+            like_type: typeof_like.Reply,
+            liker_id_reply_id: {
+                liker_id: user_id,
+                reply_id: reply_id
+            }
+        }
+    });
+
+    if (action === "like") {
+
+        if (existingLike) {
+            throw new GotErr(400, "you have already liked this comment reply")
+        }
+
+        const like = await prisma.cmtOrReplyLike.create({
+            data: {
+                like_type: typeof_like.Reply,
+                reply_id: reply_id,
+                liker_id: user_id
+            },
+            select:{
+                id: true,
+                like_type: true,
+                reply_id: true,
+                liker_id: true
+            }
+        });
+
+        if (!like) {
+            throw new Error("failed to like reply")
+        }
+    }
+
+
+    if (action === "unlike") {
+        if (!existingReply) {
+            throw new GotErr(400, "you haven't like this comment reply")
+        }
+
+        const unlike = await prisma.cmtOrReplyLike.delete({
+            where: {
+                like_type: typeof_like.Reply,
+                liker_id_reply_id: {
+                    liker_id: user_id,
+                    reply_id: reply_id
+                },
+            },
+            select:{
+                id: true,
+                like_type: true,
+                reply_id: true,
+                liker_id: true
+            }
+            
+        });
+
+        if(!unlike){
+             throw new Error("failed to unlike reply")
+        }
+    }
 }

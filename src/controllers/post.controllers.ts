@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike, CommentReply, GetReplies, DeleteReply } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike, CommentReply, GetReplies, DeleteReply, LikeUnlikeReply } from "../services/post.services";
 import { GotErr } from "../utils/error";
 import { success } from "zod";
 
@@ -493,6 +493,40 @@ export const DeleteCommentReply = async (req: Request, res: Response) => {
             success: true,
             message: "reply has been deleted successfully",
             data: reply
+        });
+
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const LikeCommentReply = async (req: Request, res: Response) => {
+    try {
+
+        const user = req.user as IUser;
+        const { reply_id, action } = req.query
+
+        const msg = action === "like" ? "reply liked successfully" : "reply unliked successfully";
+
+        const like = await LikeUnlikeReply(user.id, Number(reply_id), action as string)
+
+        return res.status(200).json({
+            success: true,
+            message: msg,
+            data: like
         });
 
 
