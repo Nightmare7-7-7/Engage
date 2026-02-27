@@ -846,3 +846,50 @@ export const CommentReply = async (user_id: number, comment_id: number, reply: s
 
     return replyComment;
 }
+
+
+export const GetReplies = async (comment_id: number) => {
+    
+    if (!comment_id) {
+        throw new GotErr(400, "comment id is required");
+    }
+
+    const existingComment = await prisma.comment.findUnique({
+        where: {
+            id: comment_id
+        },
+        select:{
+            replies:{
+                select:{
+                    id: true,
+                    reply: true,
+                    likes: true,
+                    replier: {
+                        select:{
+                            id: true,
+                            fullname: true,
+                            username: true,
+                            profile_picture: true,
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!existingComment) {
+        throw new GotErr(404, "comment with this id not found")
+    }
+
+    return existingComment.replies.map((reply) => {
+        return {
+            id : reply.id,
+            reply: reply.reply,
+            likes: reply.likes.length,
+            replier: reply.replier
+        };
+    });
+
+    
+
+}

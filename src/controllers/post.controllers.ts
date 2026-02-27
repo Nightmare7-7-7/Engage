@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike, CommentReply } from "../services/post.services";
+import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike, CommentReply, GetReplies } from "../services/post.services";
 import { GotErr } from "../utils/error";
+import { success } from "zod";
 
 type post = {
     caption?: string,
@@ -427,10 +428,41 @@ export const Reply = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             success: true,
-            message: "Successfully replied to the comment"
+            message: "Successfully replied to the comment",
+            data: reply
         });
 
 
+
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+export const GetCommentReplies = async (req: Request, res: Response) => {
+    try {
+        const comment_id = req.query.comment_id;
+
+        const Replies = await GetReplies(Number(comment_id));
+
+        return res.status(200).json({
+            success: true,
+            message: "comment replies retrived successfully",
+            data: Replies
+        });
 
 
     } catch (err: any) {
