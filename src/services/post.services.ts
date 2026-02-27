@@ -810,3 +810,39 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
 
 
 }
+
+
+export const CommentReply = async (user_id: number, comment_id: number, reply: string) => {
+    if (!comment_id) {
+        throw new GotErr(400, "comment id is required");
+    }
+
+    if (!reply) {
+        throw new GotErr(400, "reply_text is required")
+    }
+
+    const existingComment = await prisma.comment.findUnique({
+        where: {
+            id: comment_id
+        }
+    });
+
+    if (!existingComment) {
+        throw new GotErr(404, "comment with this id not found")
+    }
+
+    const replyComment = await prisma.reply.create({
+        data: {
+            reply,
+            replier_id: user_id,
+            replied_id: comment_id
+
+        }
+    });
+
+    if (!replyComment) {
+        throw new Error("Failed to give reply to the comment")
+    }
+
+    return replyComment;
+}
