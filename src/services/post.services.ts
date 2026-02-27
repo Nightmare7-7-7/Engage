@@ -849,7 +849,7 @@ export const CommentReply = async (user_id: number, comment_id: number, reply: s
 
 
 export const GetReplies = async (comment_id: number) => {
-    
+
     if (!comment_id) {
         throw new GotErr(400, "comment id is required");
     }
@@ -858,14 +858,14 @@ export const GetReplies = async (comment_id: number) => {
         where: {
             id: comment_id
         },
-        select:{
-            replies:{
-                select:{
+        select: {
+            replies: {
+                select: {
                     id: true,
                     reply: true,
                     likes: true,
                     replier: {
-                        select:{
+                        select: {
                             id: true,
                             fullname: true,
                             username: true,
@@ -883,13 +883,50 @@ export const GetReplies = async (comment_id: number) => {
 
     return existingComment.replies.map((reply) => {
         return {
-            id : reply.id,
+            id: reply.id,
             reply: reply.reply,
             likes: reply.likes.length,
             replier: reply.replier
         };
     });
 
-    
+
+
+}
+
+
+
+export const DeleteReply = async (user_id: number, reply_id: number) => {
+    if (!reply_id) {
+        throw new GotErr(400, "reply_id is required")
+    }
+
+    const existingReply = await prisma.reply.findUnique({
+        where: {
+            id: reply_id
+        }
+    });
+
+    if (!existingReply) {
+        throw new GotErr(404, "reply with this id not found")
+    }
+
+    //check if the reply belongs to requesting user
+
+    if (existingReply.replier_id !== user_id) {
+        throw new GotErr(403, "You are not authorized to delete others reply")
+    }
+
+    const del = await prisma.reply.delete({
+        where: {
+            id: reply_id
+        }
+    });
+
+    if (!del) {
+        throw new Error("failed to delete reply")
+    }
+
+    return del;
 
 }
