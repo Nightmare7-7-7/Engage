@@ -991,11 +991,13 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
         if (!like) {
             throw new Error("failed to like reply")
         }
+
+        return like;
     }
 
 
     if (action === "unlike") {
-        if (!existingReply) {
+        if (!existingLike) {
             throw new GotErr(400, "you haven't like this comment reply")
         }
 
@@ -1019,5 +1021,7 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
         if(!unlike){
              throw new Error("failed to unlike reply")
         }
+
+        return unlike;
     }
 }
