@@ -7,16 +7,18 @@ import crypto from "crypto"
 import mailer from "../utils/mailer";
 import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
 import { JwtPayload } from "jsonwebtoken";
+import cloudinary from "../configs/cloudinary";
 
 type UserData = {
     fullname: string;
     username: string;
     email: string;
     password: string;
-    profile_picture?: string;
+    profile_picture?: Buffer;
 };
 
 export const RegisterUser = async ({ fullname, username, email, password, profile_picture }: UserData) => {
+
     const emailExists = await prisma.user.findUnique({
         where: { email }
     });
@@ -30,7 +32,7 @@ export const RegisterUser = async ({ fullname, username, email, password, profil
     });
 
     if (usernameExists) {
-        throw new GotErr(400, "User with this username already exists.kindly choose another username");
+        throw new GotErr(400, "User with this username already exists kindly choose another username");
     }
 
     const hashed = await hash(password);
@@ -39,13 +41,42 @@ export const RegisterUser = async ({ fullname, username, email, password, profil
         throw new Error("Internal Server Error, try later");
     }
 
+    if (!profile_picture) {
+        const user = await prisma.user.create({
+            data: {
+                fullname,
+                username,
+                email,
+                password: hashed
+            },
+            select: {
+                id: true,
+                fullname: true,
+                username: true,
+                email: true,
+                profile_picture: true,
+                email_verified: true,
+            }
+        });
+
+        if (!user) {
+            throw new Error("Internal Server Error, try later")
+        }
+
+        return user
+    }
+
+    //if requested with profile picture 
+
+    const url = await uploadToCloudinary(profile_picture, "profile_pics");
+
     const user = await prisma.user.create({
         data: {
             fullname,
             username,
             email,
             password: hashed,
-            profile_picture: profile_picture
+            profile_picture: url
         },
         select: {
             id: true,
@@ -54,6 +85,7 @@ export const RegisterUser = async ({ fullname, username, email, password, profil
             email: true,
             profile_picture: true,
             email_verified: true,
+
         }
     });
 
@@ -62,6 +94,7 @@ export const RegisterUser = async ({ fullname, username, email, password, profil
     }
 
     return user
+
 
 }
 
@@ -440,7 +473,7 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
     }
 
     // prevent user not to follow or unfollow himself
-    if (user_id === folllowing_id){
+    if (user_id === folllowing_id) {
         throw new GotErr(400, "you can't follow/unfollow yourself")
     }
 
@@ -512,15 +545,15 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
 
 export const FindUser = async (user_id: number) => {
 
-    if(!user_id){
-        throw new GotErr(400,"id is required");
+    if (!user_id) {
+        throw new GotErr(400, "id is required");
     }
 
     const user = await prisma.user.findUnique({
-        where:{
+        where: {
             id: user_id
         },
-        select:{
+        select: {
             id: true,
             fullname: true,
             username: true,
@@ -532,7 +565,7 @@ export const FindUser = async (user_id: number) => {
         }
     });
 
-    if(!user){
+    if (!user) {
         throw new GotErr(404, "user with this id not found");
     }
 
@@ -541,6 +574,6 @@ export const FindUser = async (user_id: number) => {
         following: user.following.length,
         followers: user.followers.length
     }
-    
+
 
 }

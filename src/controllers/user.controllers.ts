@@ -9,15 +9,23 @@ interface reg {
     username: string
     email: string
     password: string
-    profile_picture?: string
 
 }
 
 export const Register = async (req: Request, res: Response) => {
     try {
-        const { fullname, username, email, password, profile_picture }: reg = registerValidator.parse(req.body)
 
-        //Controller is expecting profile picture to come from frontend using our another api upload profile-picture 
+        const body = {
+            fullname : req.body.fullname,
+            username : req.body.username,
+            email : req.body.email,
+            password: req.body.password 
+        }
+
+        const { fullname, username, email, password }: reg = registerValidator.parse(body);
+
+        const profile_picture = req.file?.buffer
+
         const register = await RegisterUser({ fullname, username, email, password, profile_picture });
 
         return res.status(201).json({

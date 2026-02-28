@@ -1,3 +1,4 @@
+import { multerWrapper } from './../middlewares/multerWrapper';
 import { Router } from "express";
 import { ChangePassword, EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, SelfInfo, UploadProfile, VerfyEmail, GetUserPosts, Follow, GetUser } from "../controllers/user.controllers";
 import { uploadImage } from "../middlewares/multer";
@@ -7,7 +8,7 @@ import { AuthCheck } from "../middlewares/auth.middleware";
 const userRoutes = Router()
 
 //non authentication required routes
-userRoutes.post("/user/account/create", Register);
+userRoutes.post("/user/account/create", uploadImage.single("image"),Register);
 userRoutes.post("/user/acount/profile-picture", RateLimiter(10), uploadImage.single("image"), UploadProfile);
 userRoutes.post("/user/account/login", RateLimiter(10), Login);
 userRoutes.get("/user/account/logout", Logout);
