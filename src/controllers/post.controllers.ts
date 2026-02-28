@@ -130,7 +130,7 @@ export const UpdatePost = async (req: Request, res: Response) => {
         const { id, caption, visibility }: UpdatePost = req.body;
         const media = req.file?.buffer;
 
-        const post = await Update(user.id, Number(id), caption, media, visibility);
+        const post = await Update(user, Number(id), caption, media, visibility);
 
         return res.status(200).json({
             success: true,
@@ -162,7 +162,7 @@ export const DeletePost = async (req: Request, res: Response) => {
 
         const post_id = req.query.post_id;
 
-        const post = await Delete(user.id, Number(post_id));
+        const post = await Delete(user, Number(post_id));
 
         return res.status(200).json({
             success: true,
@@ -256,7 +256,7 @@ export const UpdateComment = async (req: Request, res: Response) => {
         const user = req.user as IUser;
         const { id, comment } = req.body;
 
-        const updatedComment = await CommentUpdate(user.id, Number(id), comment);
+        const updatedComment = await CommentUpdate(user, Number(id), comment);
 
         return res.status(200).json({
             success: true,
@@ -282,24 +282,13 @@ export const UpdateComment = async (req: Request, res: Response) => {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 export const DeleteComment = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
 
         const comment_id = req.query.comment_id;
 
-        const del = await CommentDelete(user.id, Number(comment_id));
+        const del = await CommentDelete(user, Number(comment_id));
 
         return res.status(200).json({
             success: true,
@@ -487,7 +476,7 @@ export const DeleteCommentReply = async (req: Request, res: Response) => {
         const user = req.user as IUser;
         const reply_id = req.query.reply_id;
 
-        const reply = await DeleteReply(user.id, Number(reply_id));
+        const reply = await DeleteReply(user, Number(reply_id));
 
         return res.status(200).json({
             success: true,

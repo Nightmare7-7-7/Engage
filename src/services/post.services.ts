@@ -178,7 +178,18 @@ enum Visibility {
     Private = "Private",
 }
 
-export const Update = async (user_id: number, post_id: number, caption?: string, media?: Buffer, visibility?: Visibility) => {
+
+interface IUser {
+    id: number,
+    fullname: string,
+    username: string,
+    email: string,
+    is_admin: boolean,
+    email_verified: boolean,
+    iat: number,
+    exp: number
+}
+export const Update = async (user: IUser, post_id: number, caption?: string, media?: Buffer, visibility?: Visibility) => {
 
     if (!post_id) {
         throw new GotErr(400, "post id is required");
@@ -191,14 +202,14 @@ export const Update = async (user_id: number, post_id: number, caption?: string,
     const existingPost = await prisma.post.findUnique({
         where: {
             id: post_id
-        }
+        },
     });
 
     if (!existingPost) {
         throw new GotErr(404, "post with this id not found");
     }
 
-    if (existingPost.creator_id !== user_id) {
+    if (existingPost.creator_id !== user.id && !user.is_admin) {
         throw new GotErr(403, "You are not authorized to update others post");
     }
 
@@ -318,7 +329,7 @@ export const Update = async (user_id: number, post_id: number, caption?: string,
 }
 
 
-export const Delete = async (user_id: number, post_id: number) => {
+export const Delete = async (user: IUser, post_id: number) => {
 
     if (!post_id) {
         throw new GotErr(400, "post id is required");
@@ -335,7 +346,7 @@ export const Delete = async (user_id: number, post_id: number) => {
         throw new GotErr(404, "post with this id not found");
     }
 
-    if (existingPost.creator_id !== user_id) {
+    if (existingPost.creator_id !== user.id && !user.is_admin) {
         throw new GotErr(403, "You are not authorized to delete others post");
     }
 
@@ -482,7 +493,7 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
 }
 
 
-export const CommentUpdate = async (user_id: number, comment_id: number, comment: string) => {
+export const CommentUpdate = async (user: IUser, comment_id: number, comment: string) => {
 
     if (!comment_id) {
         throw new GotErr(400, "comment id is required")
@@ -502,7 +513,7 @@ export const CommentUpdate = async (user_id: number, comment_id: number, comment
         throw new GotErr(404, "comment with this id not found");
     }
 
-    if (existingComment.commenter_id !== user_id) {
+    if (existingComment.commenter_id !== user.id && !user.is_admin) {
         throw new GotErr(403, "You are not authorized to update others comment");
     }
 
@@ -526,11 +537,7 @@ export const CommentUpdate = async (user_id: number, comment_id: number, comment
 
 
 
-
-
-
-
-export const CommentDelete = async (user_id: number, comment_id: number) => {
+export const CommentDelete = async (user: IUser, comment_id: number) => {
 
     if (!comment_id) {
         throw new GotErr(400, "comment id is required")
@@ -546,7 +553,7 @@ export const CommentDelete = async (user_id: number, comment_id: number) => {
         throw new GotErr(404, "comment with this id not found");
     }
 
-    if (existingComment.commenter_id !== user_id) {
+    if (existingComment.commenter_id !== user.id && !user.is_admin) {
         throw new GotErr(403, "You are not authorized to delete others comment");
     }
 
@@ -879,7 +886,7 @@ export const GetReplies = async (comment_id: number) => {
                             id: true,
                             fullname: true,
                             username: true,
-                            profile_picture: true       
+                            profile_picture: true
                         }
                     },
                     createdAt: true,
@@ -910,7 +917,7 @@ export const GetReplies = async (comment_id: number) => {
 
 
 
-export const DeleteReply = async (user_id: number, reply_id: number) => {
+export const DeleteReply = async (user: IUser, reply_id: number) => {
     if (!reply_id) {
         throw new GotErr(400, "reply_id is required")
     }
@@ -927,7 +934,7 @@ export const DeleteReply = async (user_id: number, reply_id: number) => {
 
     //check if the reply belongs to requesting user
 
-    if (existingReply.replier_id !== user_id) {
+    if (existingReply.replier_id !== user.id && !user.is_admin) {
         throw new GotErr(403, "You are not authorized to delete others reply")
     }
 
@@ -992,7 +999,7 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
                 reply_id: reply_id,
                 liker_id: user_id
             },
-            select:{
+            select: {
                 id: true,
                 like_type: true,
                 reply_id: true,
@@ -1021,17 +1028,17 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
                     reply_id: reply_id
                 },
             },
-            select:{
+            select: {
                 id: true,
                 like_type: true,
                 reply_id: true,
                 liker_id: true
             }
-            
+
         });
 
-        if(!unlike){
-             throw new Error("failed to unlike reply")
+        if (!unlike) {
+            throw new Error("failed to unlike reply")
         }
 
         return unlike;
