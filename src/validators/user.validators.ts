@@ -14,7 +14,8 @@ const msgs = {
     empty_verfy_code: "verfyCode shouldn't be empty",
     short_verfy_code: "verfyCode code must be in 6digits",
     empty_newPassword: "newPassword shouldnt be empty",
-    short_newPassword: "newPassword must be at least 6 characters long"
+    short_newPassword: "newPassword must be at least 6 characters long",
+    empty_bio: "bio shouldn't be empty"
 }
 
 export const registerValidator = z.object({
@@ -42,5 +43,13 @@ export const ResetPassValidator = z.object({
 
 export const ChangePassValidator = z.object({
     password: z.string(msgs.empty_password),
-    newPassword: z.string(msgs.empty_newPassword).min(6,msgs.short_newPassword)
-},msgs.json_err);
+    newPassword: z.string(msgs.empty_newPassword).min(6, msgs.short_newPassword)
+}, msgs.json_err);
+
+
+
+export const UpdateInfoValidator = z.object({
+    fullname: z.string(msgs.empty_name).min(3, msgs.short_name).optional(),
+    username: z.string(msgs.empty_username).min(3, msgs.short_username).optional(),
+    bio: z.string(msgs.empty_bio).optional()
+});

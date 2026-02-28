@@ -1,6 +1,6 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser } from "../services/user.services";
-import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator } from "../validators/user.validators";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo } from "../services/user.services";
+import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator, UpdateInfoValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
 
@@ -16,10 +16,10 @@ export const Register = async (req: Request, res: Response) => {
     try {
 
         const body = {
-            fullname : req.body.fullname,
-            username : req.body.username,
-            email : req.body.email,
-            password: req.body.password 
+            fullname: req.body.fullname,
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password
         }
 
         const { fullname, username, email, password }: reg = registerValidator.parse(body);
@@ -438,5 +438,66 @@ export const GetUser = async (req: Request, res: Response) => {
             success: false,
             message: err.message
         });
+    }
+}
+
+
+interface UpdateInf {
+    fullname?: string,
+    username?: string,
+    bio?: string
+
+}
+
+export const UpdateSelfInfo = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser
+
+        const body: UpdateInf = {
+            fullname: req.body.fullname,
+            username: req.body.username,
+            bio: req.body.bio
+        }
+
+        const { fullname, username, bio }: UpdateInf = UpdateInfoValidator.parse(body);
+
+        const image = req.file?.buffer
+
+        const update = await UpdateInfo({ user_id: user.id, fullname, username, bio, image })
+
+        return res.status(200).json({
+            success: true,
+            message: "information has been updated successfully",
+            data: update
+        });
+
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+
+        if (err instanceof ZodError) {
+            return res.status(400).json({
+                success: false,
+                message: err.issues[0].message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+
+
+
+
+
     }
 }

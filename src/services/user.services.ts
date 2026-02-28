@@ -577,3 +577,76 @@ export const FindUser = async (user_id: number) => {
 
 
 }
+
+interface UpdateInf {
+    user_id: number
+    fullname?: string,
+    username?: string,
+    bio?: string,
+    image?: Buffer
+}
+
+
+export const UpdateInfo = async ({ user_id, fullname, username, bio, image }: UpdateInf) => {
+
+    let url;
+
+    if (!fullname && !username && !bio && !image) {
+        throw new GotErr(400, "atleast one field is required")
+    }
+
+
+    if (username) {
+        const existingUsername = await prisma.user.findUnique({
+            where: {
+                username: username
+            }
+        });
+
+        if (existingUsername) {
+            throw new GotErr(400, "this username is already taken please kindly choose another one")
+        }
+    }
+
+
+    if (image) {
+        url = await uploadToCloudinary(image, "profile_pics")
+    }
+
+
+    // Build update data object dynamically
+    const updateData: any = {}
+
+    if (fullname) updateData.fullname = fullname;
+    if (username) updateData.username = username;
+    if (bio) updateData.bio = bio;
+    if (url) updateData.profile_picture = url;
+
+    if (Object.keys(updateData).length > 0) {
+        const update = await prisma.user.update({
+            where: {
+                id: user_id
+            },
+            data: updateData,
+            select: {
+                id: true,
+                fullname: true,
+                username: true,
+                email: true,
+                profile_picture: true,
+                bio: true,
+                email_verified: true,
+            }
+        });
+
+        if (!update) {
+            throw new Error("Failed to update info");
+        }
+
+        return update
+    }
+    else {
+        throw new GotErr(400, "No valid fields to update");
+    }
+
+}
