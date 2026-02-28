@@ -351,7 +351,23 @@ export const VerfyEmailToken = async (token: string) => {
         throw new Error("Internal Server Error try later");
     }
 
-    return;
+    // since the verified email is set to true we must update it on jwt payload too 
+
+    const jwt_token = await Sign({
+        id: user.id,
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        is_admin: user.is_admin,
+        email_verified: user.email_verified
+    }, { expiresIn: '18d' });
+
+
+    if (!token) {
+        throw new Error("Internal Server Error, try later");
+    }
+
+    return jwt_token;
 }
 
 
@@ -651,6 +667,7 @@ export const UpdateInfo = async ({ user_id, fullname, username, bio, image }: Up
                 profile_picture: true,
                 bio: true,
                 email_verified: true,
+                is_admin: true,
                 createdAt: true,
                 updatedAt: true
             }
@@ -660,7 +677,24 @@ export const UpdateInfo = async ({ user_id, fullname, username, bio, image }: Up
             throw new Error("Failed to update info");
         }
 
-        return update
+        const token = await Sign({
+            id: update.id,
+            fullname: update.fullname,
+            username: update.username,
+            email: update.email,
+            is_admin: update.is_admin,
+            email_verified: update.email_verified
+        }, { expiresIn: '18d' });
+
+
+        if (!token) {
+            throw new Error("Internal Server Error, try later");
+        }
+
+        return {
+            info: update,
+            token
+        }
     }
     else {
         throw new GotErr(400, "No valid fields to update");

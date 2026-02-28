@@ -251,7 +251,14 @@ export const VerfyEmail = async (req: Request, res: Response) => {
     try {
         const token = req.query.token;
 
-        await VerfyEmailToken(String(token));
+        const verify = await VerfyEmailToken(String(token));
+
+        //send updated cookie in response as the data is changed in db
+        res.cookie("auth_token", verify, {
+            maxAge: 18 * 24 * 60 * 60 * 1000, // 18 days in milliseconds
+            httpOnly: true,
+            secure: true
+        });
 
         return res.status(200).json({
             success: true,
@@ -465,10 +472,16 @@ export const UpdateSelfInfo = async (req: Request, res: Response) => {
 
         const update = await UpdateInfo({ user_id: user.id, fullname, username, bio, image })
 
+        //send updated cookie in response as the data is changed in db
+        res.cookie("auth_token", update.token, {
+            maxAge: 18 * 24 * 60 * 60 * 1000, // 18 days in milliseconds
+            httpOnly: true,
+            secure: true
+        });
         return res.status(200).json({
             success: true,
             message: "information has been updated successfully",
-            data: update
+            data: update.info
         });
 
 
