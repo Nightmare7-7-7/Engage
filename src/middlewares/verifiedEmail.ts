@@ -17,7 +17,9 @@ export const VerifiedEmail = async (req: Request, res: Response, next: NextFunct
     try {
         const user = req.user as IUser
 
-        if (!user.email_verified) {
+        // return error if email is not verified and also is not admin
+
+        if (!user.email_verified && !user.is_admin) {
             throw new GotErr(403, "you have to verify your email to access this feature")
         }
         next()
