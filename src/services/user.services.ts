@@ -385,9 +385,10 @@ export const GetSelfInfo = async (id: number) => {
         bio: user.bio,
         active: user.active,
         email_verified: user.email_verified,
-        following: user.following,
-        followers: user.followers,
-        is_admin: user.is_admin
+        following: user.following.length,
+        followers: user.followers.length,
+        is_admin: user.is_admin,
+
     }
 
 }
@@ -454,7 +455,17 @@ export const userPosts = async (user_id: number) => {
         throw new GotErr(404, "No posts found for this user");
     }
 
-    return posts;
+    return posts.map((post) =>{
+        return{
+            id: post.id,
+            caption: post.caption,
+            content_url : post.content_url,
+            likes: post.likes.length,
+            comments: post.comments.length,
+            saves: post.saves.length,
+            visiblity: post.visibility
+        }
+    });
 }
 
 
