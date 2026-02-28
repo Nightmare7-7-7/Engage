@@ -42,6 +42,8 @@ model User {
   reset_code_hash String?
   reset_code_expiry DateTime?
   email_verification_hash String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 
 }
 
@@ -60,6 +62,8 @@ model Post {
   comments Comment[]
   saves Save[]
   visibility status @default(Public)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   
 }
 
@@ -69,6 +73,8 @@ model Save {
   post_id Int
   saver User @relation(fields: [saver_id],references: [id])
   post Post @relation(fields: [post_id],references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   @@unique([saver_id,post_id])
 }
 
@@ -78,6 +84,8 @@ model Follow {
   follower_id Int
   following User @relation("following",fields: [following_id],references: [id])
   follower User @relation("followers",fields: [follower_id],references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   @@unique([follower_id, following_id])
 }
 
@@ -88,6 +96,8 @@ model Like{
   liker_id Int
   liked Post @relation(fields: [liked_id],references: [id])
   liker User @relation(fields: [liker_id],references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   @@unique([liker_id,liked_id])
 
 }
@@ -102,6 +112,8 @@ model Comment {
   commented Post @relation(fields: [commented_id],references: [id])
   commenter User @relation(fields: [commenter_id],references: [id])
   replies Reply[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 
@@ -113,6 +125,8 @@ model Reply {
   replied Comment @relation(fields: [replied_id], references: [id])
   replier User @relation(fields: [replier_id], references: [id])
   likes CmtOrReplyLike[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
 }
 
 enum typeof_like {
@@ -129,6 +143,8 @@ model CmtOrReplyLike {
   liker User @relation(fields: [liker_id],references: [id])
   comment Comment? @relation(fields: [comment_id],references: [id])
   reply Reply? @relation(fields: [reply_id], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
   @@unique([liker_id,comment_id])
   @@unique([liker_id,reply_id])
 }
