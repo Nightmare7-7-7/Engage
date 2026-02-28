@@ -103,7 +103,9 @@ export const GetPosts = async () => {
                 },
                 likes: true,
                 comments: true,
-                saves: true
+                saves: true,
+                createdAt: true,
+                updatedAt: true
             }
         }
     );
@@ -150,7 +152,9 @@ export const GetPost = async (post_id: number) => {
             },
             likes: true,
             comments: true,
-            saves: true
+            saves: true,
+            createdAt: true,
+            updatedAt: true
         }
     });
 
@@ -672,6 +676,8 @@ export const GetComments = async (post_id: number) => {
                     comment: true,
                     likes: true,
                     replies: true,
+                    createdAt: true,
+                    updatedAt: true,
                     commenter: {
                         select: {
                             id: true,
@@ -697,7 +703,9 @@ export const GetComments = async (post_id: number) => {
             comment: cmt.comment,
             commenter: cmt.commenter,
             likes: cmt.likes.length,
-            replies: cmt.replies.length
+            replies: cmt.replies.length,
+            createdAt: cmt.createdAt,
+            updatedAt: cmt.updatedAt
         };
     });
 
@@ -871,9 +879,11 @@ export const GetReplies = async (comment_id: number) => {
                             id: true,
                             fullname: true,
                             username: true,
-                            profile_picture: true,
+                            profile_picture: true       
                         }
-                    }
+                    },
+                    createdAt: true,
+                    updatedAt: true
                 }
             }
         }
@@ -888,7 +898,9 @@ export const GetReplies = async (comment_id: number) => {
             id: reply.id,
             reply: reply.reply,
             likes: reply.likes.length,
-            replier: reply.replier
+            replier: reply.replier,
+            createdAt: reply.createdAt,
+            updatedAt: reply.updatedAt,
         };
     });
 

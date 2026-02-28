@@ -147,11 +147,11 @@ export const LoginUser = async (email: string, password: string) => {
 
 
 
-//first upload profile image will be triggred by frontend later it will comeup with combining create-account profile_picture field 
+// later can be used for frontend profile picture  preview
 export const UploadImage = async (image: Buffer) => {
     const imageUrl = await uploadToCloudinary(
         image,
-        "profile_pics"
+        "temp_profile_pics"
     );
 
     return imageUrl;
@@ -446,6 +446,8 @@ export const userPosts = async (user_id: number) => {
             comments: true,
             saves: true,
             visibility: true,
+            createdAt: true,
+            updatedAt: true
         },
 
     });
@@ -463,7 +465,9 @@ export const userPosts = async (user_id: number) => {
             likes: post.likes.length,
             comments: post.comments.length,
             saves: post.saves.length,
-            visiblity: post.visibility
+            visiblity: post.visibility,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt
         }
     });
 }
@@ -647,6 +651,8 @@ export const UpdateInfo = async ({ user_id, fullname, username, bio, image }: Up
                 profile_picture: true,
                 bio: true,
                 email_verified: true,
+                createdAt: true,
+                updatedAt: true
             }
         });
 
