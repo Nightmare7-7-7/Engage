@@ -455,11 +455,11 @@ export const userPosts = async (user_id: number) => {
         throw new GotErr(404, "No posts found for this user");
     }
 
-    return posts.map((post) =>{
-        return{
+    return posts.map((post) => {
+        return {
             id: post.id,
             caption: post.caption,
-            content_url : post.content_url,
+            content_url: post.content_url,
             likes: post.likes.length,
             comments: post.comments.length,
             saves: post.saves.length,
@@ -469,9 +469,9 @@ export const userPosts = async (user_id: number) => {
 }
 
 
-export const FollowUnfollow = async (user_id: number, folllowing_id: number, action: string) => {
+export const FollowUnfollow = async (user_id: number, following_id: number, action: string) => {
 
-    if (!folllowing_id) {
+    if (!following_id) {
         throw new GotErr(400, "id is required");
     }
 
@@ -484,14 +484,14 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
     }
 
     // prevent user not to follow or unfollow himself
-    if (user_id === folllowing_id) {
+    if (user_id === following_id) {
         throw new GotErr(400, "you can't follow/unfollow yourself")
     }
 
 
     const existingUser = await prisma.user.findUnique({
         where: {
-            id: folllowing_id
+            id: following_id
         }
     });
 
@@ -503,7 +503,7 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
         where: {
             follower_id_following_id: {
                 follower_id: user_id,
-                following_id: folllowing_id
+                following_id: following_id
             }
         }
     });
@@ -516,7 +516,7 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
 
         const follow = await prisma.follow.create({
             data: {
-                following_id: folllowing_id,
+                following_id: following_id,
                 follower_id: user_id
             }
         });
@@ -539,7 +539,7 @@ export const FollowUnfollow = async (user_id: number, folllowing_id: number, act
             where: {
                 follower_id_following_id: {
                     follower_id: user_id,
-                    following_id: folllowing_id
+                    following_id: following_id
                 }
             }
         });
@@ -660,4 +660,52 @@ export const UpdateInfo = async ({ user_id, fullname, username, bio, image }: Up
         throw new GotErr(400, "No valid fields to update");
     }
 
+}
+
+
+
+export const FollowList = async (user_id: number) => {
+    if (!user_id) {
+        throw new GotErr(400, "user_id is required");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            id: user_id
+        },
+        select: {
+            following: {
+                select: {
+                    follower: {
+                        select: {
+                            id: true,
+                            fullname: true,
+                            username: true,
+                        }
+                    }
+                }
+            },
+            followers: {
+                select: {
+                    following: {
+                        select: {
+                            id: true,
+                            fullname: true,
+                            username: true,
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!user) {
+        throw new GotErr(404, "User with this id not found");
+    }
+
+    // Transform the data to a cleaner format
+    return {
+        following: user.following.map(f => f.follower),
+        followers: user.followers.map(f => f.following)
+    };
 }

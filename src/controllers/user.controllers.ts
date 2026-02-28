@@ -1,5 +1,5 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator, UpdateInfoValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -494,10 +494,34 @@ export const UpdateSelfInfo = async (req: Request, res: Response) => {
             message: err.message
         });
 
+    }
+}
 
 
 
+export const GetFollowList = async (req: Request, res: Response) => {
+    try {
+        const id = req.query.user_id
 
+        const list = await FollowList(Number(id));
 
+        return res.status(200).json({
+            success: true,
+            message: "user follow list has been retrived successfully",
+            data: list
+        });
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
     }
 }

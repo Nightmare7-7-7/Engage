@@ -1,6 +1,6 @@
 import { multerWrapper } from './../middlewares/multerWrapper';
 import { Router } from "express";
-import { ChangePassword, EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, SelfInfo, UploadProfile, VerfyEmail, GetUserPosts, Follow, GetUser, UpdateSelfInfo } from "../controllers/user.controllers";
+import { ChangePassword, EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, SelfInfo, UploadProfile, VerfyEmail, GetUserPosts, Follow, GetUser, UpdateSelfInfo, GetFollowList } from "../controllers/user.controllers";
 import { uploadImage } from "../middlewares/multer";
 import RateLimiter from "../utils/rateLimiter";
 import { AuthCheck } from "../middlewares/auth.middleware";
@@ -17,6 +17,7 @@ userRoutes.post("/user/account/reset-password", RateLimiter(25), ResetPassword);
 userRoutes.post("/user/account/email-verification", RateLimiter(8), EmailVerification);
 userRoutes.get("/user/account/verify-email", VerfyEmail);
 userRoutes.get("/user/get", GetUser);
+userRoutes.get("/user/follow-list", GetFollowList);
 
 // authentication required routes
 userRoutes.get("/user/account/me", AuthCheck, SelfInfo);
