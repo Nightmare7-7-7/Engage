@@ -423,15 +423,17 @@ export const Follow = async (req: Request, res: Response) => {
 
 export const GetUser = async (req: Request, res: Response) => {
     try {
+
+        const req_user = req.user as IUser
         const id = req.query.id
 
-        const user = await FindUser(Number(id));
+        const user = await FindUser(req_user.id, Number(id));
 
         return res.status(200).json({
             success: true,
             message: "UserInfo retrieved successfully",
             data: user
-        })
+        });
     } catch (err: any) {
         if (err instanceof GotErr) {
             return res.status(err.code).json({

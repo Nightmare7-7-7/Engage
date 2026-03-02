@@ -574,8 +574,7 @@ export const FollowUnfollow = async (user_id: number, following_id: number, acti
 
 
 
-export const FindUser = async (user_id: number) => {
-
+export const FindUser = async (req_user: number, user_id: number) => {
     if (!user_id) {
         throw new GotErr(400, "id is required");
     }
@@ -591,8 +590,30 @@ export const FindUser = async (user_id: number) => {
             profile_picture: true,
             bio: true,
             active: true,
-            following: true,
-            followers: true,
+            _count: {
+                select: {
+                    following: true,
+                    followers: true
+                }
+            },
+            followers: {
+                where: {
+                    following_id: req_user
+                },
+                select: {
+                    following_id: true
+                },
+                take: 1
+            },
+            following: {
+                where: {
+                    follower_id: req_user
+                },
+                select: {
+                    follower_id: true
+                },
+                take: 1
+            }
         }
     });
 
@@ -602,12 +623,14 @@ export const FindUser = async (user_id: number) => {
 
     return {
         ...user,
-        following: user.following.length,
-        followers: user.followers.length
-    }
+        following: user._count.followers,
+        followers: user._count.following,
+        followed_by_you: user.following.length > 0,
+        getting_followed: user.followers.length > 0
+    };
+};
 
 
-}
 
 interface UpdateInf {
     user_id: number
@@ -745,7 +768,7 @@ export const FollowList = async (user_id: number) => {
 
     // Transform the data to a cleaner format
     return {
-        following: user.following.map(f => f.follower),
-        followers: user.followers.map(f => f.following)
+        following: user.followers.map(f => f.following),
+        followers: user.following.map(f => f.follower)
     };
 }

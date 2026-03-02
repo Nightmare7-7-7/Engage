@@ -15,7 +15,7 @@ userRoutes.post("/user/account/forget-password", RateLimiter(5), ForgetPassword)
 userRoutes.post("/user/account/reset-password", RateLimiter(25), ResetPassword);
 userRoutes.post("/user/account/email-verification", RateLimiter(8), EmailVerification);
 userRoutes.get("/user/account/verify-email", VerfyEmail);
-userRoutes.get("/user/get", GetUser);
+userRoutes.get("/user/get", AuthCheck, GetUser);
 userRoutes.get("/user/follow-list", GetFollowList);
 
 // authentication required routes
