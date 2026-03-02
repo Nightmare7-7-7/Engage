@@ -82,7 +82,9 @@ export const Create = async (creator_id: number, caption?: string, media?: Buffe
 }
 
 
-export const GetPosts = async () => {
+export const GetPosts = async (user_id: number) => {
+
+    let liked_by_you: boolean = false;
 
     const posts = await prisma.post.findMany(
         {
@@ -114,18 +116,23 @@ export const GetPosts = async () => {
         throw new GotErr(404, "No posts found");
     }
 
+
+
     return {
-        posts: posts.map(post => ({
-            ...post,
-            likes: post.likes.length,
-            comments: post.comments.length,
-            saves: post.saves.length
-        }))
+        posts: posts.map(post => (
+            {
+                ...post,
+                likes: post.likes.length,
+                comments: post.comments.length,
+                saves: post.saves.length,
+                liked_by_you: post.likes.some((l) => l.liker_id === user_id),
+                saved_by_you: post.saves.some(s => s.saver_id === user_id)
+            }))
     };
 }
 
 
-export const GetPost = async (post_id: number) => {
+export const GetPost = async (user_id: number, post_id: number) => {
 
     if (!post_id) {
         throw new GotErr(400, "post_id is required");
@@ -169,7 +176,9 @@ export const GetPost = async (post_id: number) => {
         // no need to return all the data insted return lengths later they will fetched using other api endpoints
         likes: post.likes.length,
         comments: post.comments.length,
-        saves: post.saves.length
+        saves: post.saves.length,
+        liked_by_you: post.likes.some(l => l.liker_id === user_id),
+        saved_by_you: post.saves.some(s => s.saver_id === user_id)
     }
 }
 
@@ -664,7 +673,7 @@ export const SaveUnsave = async (user_id: number, post_id: number, action: strin
 }
 
 
-export const GetComments = async (post_id: number) => {
+export const GetComments = async (user_id: number, post_id: number) => {
 
     if (!post_id) {
         throw new GotErr(400, "post_id is required")
@@ -711,8 +720,10 @@ export const GetComments = async (post_id: number) => {
             commenter: cmt.commenter,
             likes: cmt.likes.length,
             replies: cmt.replies.length,
+            liked_by_you: cmt.likes.some(c => c.liker_id === user_id),
             createdAt: cmt.createdAt,
-            updatedAt: cmt.updatedAt
+            updatedAt: cmt.updatedAt,
+
         };
     });
 
@@ -865,7 +876,7 @@ export const CommentReply = async (user_id: number, comment_id: number, reply: s
 }
 
 
-export const GetReplies = async (comment_id: number) => {
+export const GetReplies = async (user_id: number, comment_id: number) => {
 
     if (!comment_id) {
         throw new GotErr(400, "comment id is required");
@@ -906,6 +917,7 @@ export const GetReplies = async (comment_id: number) => {
             reply: reply.reply,
             likes: reply.likes.length,
             replier: reply.replier,
+            liked_by_you: reply.likes.some(r => r.liker_id === user_id),
             createdAt: reply.createdAt,
             updatedAt: reply.updatedAt,
         };

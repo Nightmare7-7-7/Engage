@@ -55,7 +55,8 @@ export const CreatePost = async (req: Request, res: Response) => {
 
 export const GetAllPosts = async (req: Request, res: Response) => {
     try {
-        const posts = await GetPosts();
+        const user = req.user as IUser
+        const posts = await GetPosts(user.id);
 
         return res.status(200).json({
             success: true,
@@ -83,8 +84,11 @@ export const GetAllPosts = async (req: Request, res: Response) => {
 
 export const GetPostById = async (req: Request, res: Response) => {
     try {
+
+        const user = req.user as IUser;
+
         const post_id = req.query.post_id;
-        const post = await GetPost(Number(post_id));
+        const post = await GetPost(user.id, Number(post_id));
 
         return res.status(200).json({
             success: true,
@@ -347,9 +351,10 @@ export const Save = async (req: Request, res: Response) => {
 
 export const GetAllComments = async (req: Request, res: Response) => {
     try {
-        const id = req.query.post_id
+        const user = req.user as IUser
 
-        const comments = await GetComments(Number(id));
+        const id = req.query.post_id
+        const comments = await GetComments(user.id, Number(id));
 
         return res.status(200).json({
             success: true,
@@ -443,9 +448,10 @@ export const Reply = async (req: Request, res: Response) => {
 
 export const GetCommentReplies = async (req: Request, res: Response) => {
     try {
+        const user = req.user as IUser
         const comment_id = req.query.comment_id;
 
-        const Replies = await GetReplies(Number(comment_id));
+        const Replies = await GetReplies(user.id, Number(comment_id));
 
         return res.status(200).json({
             success: true,
