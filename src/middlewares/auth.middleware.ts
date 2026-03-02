@@ -4,7 +4,11 @@ import { Verify } from "../utils/jwt";
 
 export const AuthCheck = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const token = req.get('authorization') || req.get('auth_token');
+        const token = req.get('authorization') || 
+              req.get('auth_token') || 
+              req.cookies?.auth_token || 
+              req.cookies?.token || 
+              req.signedCookies?.auth_token;
 
         if (!token) {
             throw new GotErr(401, "Unauthorized");
