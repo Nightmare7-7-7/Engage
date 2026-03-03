@@ -401,8 +401,8 @@ export const GetSelfInfo = async (id: number) => {
         bio: user.bio,
         active: user.active,
         email_verified: user.email_verified,
-        following: user.following.length,
-        followers: user.followers.length,
+        following: user.followers.length,
+        followers: user.following.length,
         is_admin: user.is_admin,
 
     }
