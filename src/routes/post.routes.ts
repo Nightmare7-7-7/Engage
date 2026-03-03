@@ -11,8 +11,8 @@ const postRoutes = Router()
 
 
 postRoutes.post('/create', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, VerifiedEmail, CreatePost);
-postRoutes.get('/get/all', GetAllPosts);
-postRoutes.get('/get', GetPostById);
+postRoutes.get('/get/all', AuthCheck, GetAllPosts);
+postRoutes.get('/get', AuthCheck, GetPostById);
 postRoutes.put('/update', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, VerifiedEmail, UpdatePost);
 postRoutes.delete('/delete', AuthCheck, VerifiedEmail, DeletePost);
 postRoutes.get('/like', AuthCheck, VerifiedEmail, LikePost);
@@ -28,7 +28,7 @@ postRoutes.get('/comment/like', AuthCheck, VerifiedEmail, LikeComment);
 
 //comment reply releted paths
 postRoutes.post('/comment/reply', AuthCheck, VerifiedEmail, RateLimiter(15), Reply);
-postRoutes.get('/comment/reply/all', GetCommentReplies);
-postRoutes.delete('/comment/reply/delete', VerifiedEmail, AuthCheck, DeleteCommentReply)
+postRoutes.get('/comment/reply/all', AuthCheck, GetCommentReplies);
+postRoutes.delete('/comment/reply/delete', AuthCheck, VerifiedEmail, DeleteCommentReply)
 postRoutes.get('/comment/reply/like', AuthCheck, VerifiedEmail, LikeCommentReply);
 export default postRoutes;

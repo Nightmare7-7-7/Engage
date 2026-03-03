@@ -359,17 +359,81 @@ export const Delete = async (user: IUser, post_id: number) => {
         throw new GotErr(403, "You are not authorized to delete others post");
     }
 
-    const post = await prisma.post.delete({
-        where: {
-            id: post_id
+
+    await prisma.$transaction(async (tx) => {
+
+        await tx.like.deleteMany({
+            where: {
+                liked_id: post_id
+            }
+        });
+
+        await tx.save.deleteMany({
+            where: {
+                post_id: post_id
+            }
+        });
+
+
+        const comments = await tx.comment.findMany({
+            where: {
+                commented_id: post_id
+            }
+        });
+
+        const commentsMap = comments.map((c) => c.id)
+
+
+        const replies = await tx.reply.findMany({
+            where: {
+                replied_id: {
+                    in: commentsMap
+                }
+            }
+        });
+
+        const repliesMap = replies.map(r => r.id)
+
+        await tx.cmtOrReplyLike.deleteMany({
+            where: {
+                reply_id: {
+                    in: repliesMap
+                }
+            }
+        });
+
+
+
+        await tx.reply.deleteMany({
+            where: {
+                replied_id: {
+                    in: commentsMap
+                }
+            }
+        });
+
+
+        await tx.comment.deleteMany({
+            where: {
+                commented_id: post_id
+            },
+
+        });
+
+        const post = await tx.post.delete({
+            where: {
+                id: post_id
+            }
+        });
+
+        if (!post) {
+            throw new Error("Failed to delete the post");
         }
+
+        return post;
+
     });
 
-    if (!post) {
-        throw new Error("Failed to delete the post");
-    }
-
-    return post;
 }
 
 
@@ -555,6 +619,9 @@ export const CommentDelete = async (user: IUser, comment_id: number) => {
     const existingComment = await prisma.comment.findUnique({
         where: {
             id: comment_id
+        },
+        include: {
+            replies: true
         }
     });
 
@@ -566,6 +633,33 @@ export const CommentDelete = async (user: IUser, comment_id: number) => {
         throw new GotErr(403, "You are not authorized to delete others comment");
     }
 
+
+    //first delete its likes/replies
+
+    const replies = existingComment.replies.map(r => r.id)
+
+    await prisma.$transaction([
+        prisma.cmtOrReplyLike.deleteMany({
+            where: {
+                comment_id: comment_id
+            }
+        }),
+
+
+        prisma.cmtOrReplyLike.deleteMany({
+            where: {
+                reply_id: {
+                    in: replies
+                }
+            }
+        }),
+
+        prisma.reply.deleteMany({
+            where: {
+                replied_id: comment_id
+            }
+        }),
+    ])
     const del = await prisma.comment.delete({
         where: {
             id: comment_id
