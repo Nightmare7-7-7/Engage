@@ -1,5 +1,5 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList, FollowingPosts } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList, FollowingPosts, UserSuggestions } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator, UpdateInfoValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -554,6 +554,37 @@ export const GetFollowingPosts = async (req: Request, res: Response) => {
             message: "posts fetched successfully",
             data: posts
         });
+
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+
+
+export const GetUserSuggestions = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser
+        const suggestions = await UserSuggestions(user.id);
+
+        return res.status(200).json({
+            success: true,
+            message: "suggestion list has been retrived successfully",
+            data: suggestions
+        });
+
 
     } catch (err: any) {
         if (err instanceof GotErr) {

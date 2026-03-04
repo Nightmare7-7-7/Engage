@@ -816,7 +816,7 @@ export const FollowingPosts = async (user_id: number) => {
             },
 
             saves: {
-                select:{
+                select: {
                     saver_id: true
                 }
             }
@@ -829,7 +829,7 @@ export const FollowingPosts = async (user_id: number) => {
         return {
             id: p.id,
             caption: p.caption,
-            content_url : p.content_url,
+            content_url: p.content_url,
             likes: p.likes.length,
             saves: p.saves.length,
             createdAt: p.createdAt,
@@ -839,5 +839,44 @@ export const FollowingPosts = async (user_id: number) => {
             creator: p.creator
         }
     });
+
+}
+
+
+
+export const UserSuggestions = async (user_id: number) => {
+
+    //find users you follow 
+    const followings = await prisma.follow.findMany({
+        where: {
+            follower_id: user_id
+        },
+        select: {
+            following_id: true
+        }
+    });
+
+    const followingsMap = followings.map(f => f.following_id);
+
+    //include your id in exclude list 
+    const excludeIds = [...followingsMap, user_id]
+
+    const suggestions = await prisma.user.findMany({
+        where: {
+            id: {
+                notIn: excludeIds
+            }
+        },
+        select: {
+            id: true,
+            fullname: true,
+            username: true,
+            profile_picture: true
+        }
+    });
+
+    return suggestions;
+
+
 
 }
