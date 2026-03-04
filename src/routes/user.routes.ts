@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ChangePassword, EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, SelfInfo, UploadProfile, VerfyEmail, GetUserPosts, Follow, GetUser, UpdateSelfInfo, GetFollowList } from "../controllers/user.controllers";
+import { ChangePassword, EmailVerification, ForgetPassword, Login, Logout, Register, ResetPassword, SelfInfo, UploadProfile, VerfyEmail, GetUserPosts, Follow, GetUser, UpdateSelfInfo, GetFollowList, GetFollowingPosts } from "../controllers/user.controllers";
 import { uploadImage } from "../middlewares/multer";
 import RateLimiter from "../utils/rateLimiter";
 import { AuthCheck } from "../middlewares/auth.middleware";
@@ -17,7 +17,7 @@ userRoutes.post("/user/account/email-verification", RateLimiter(8), EmailVerific
 userRoutes.get("/user/account/verify-email", VerfyEmail);
 userRoutes.get("/user/get", AuthCheck, GetUser);
 userRoutes.get("/user/follow-list", GetFollowList);
-
+userRoutes.get('/user/following/posts', AuthCheck, GetFollowingPosts);
 // authentication required routes
 userRoutes.get("/user/account/me", AuthCheck, SelfInfo);
 userRoutes.post("/user/account/change-password", AuthCheck, VerifiedEmail, ChangePassword);

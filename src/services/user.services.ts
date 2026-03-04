@@ -772,3 +772,72 @@ export const FollowList = async (user_id: number) => {
         followers: user.following.map(f => f.follower)
     };
 }
+
+
+
+export const FollowingPosts = async (user_id: number) => {
+
+    const followings = await prisma.follow.findMany({
+        where: {
+            follower_id: user_id
+        },
+
+        select: {
+            following: {
+                select: {
+                    id: true
+                }
+            }
+        }
+    });
+
+    const usersMap = followings.map(f => f.following.id)
+
+    const posts = await prisma.post.findMany({
+        where: {
+            creator_id: {
+                in: usersMap
+            },
+            visibility: "Public"
+        },
+        include: {
+            creator: {
+                select: {
+                    id: true,
+                    fullname: true,
+                    username: true,
+                    profile_picture: true
+                }
+            },
+            likes: {
+                select: {
+                    liker_id: true,
+                }
+            },
+
+            saves: {
+                select:{
+                    saver_id: true
+                }
+            }
+        }
+    });
+
+
+
+    return posts.map(p => {
+        return {
+            id: p.id,
+            caption: p.caption,
+            content_url : p.content_url,
+            likes: p.likes.length,
+            saves: p.saves.length,
+            createdAt: p.createdAt,
+            updatedAt: p.updatedAt,
+            liked_by_you: p.likes.some(l => l.liker_id === user_id),
+            saved_by_you: p.saves.some(s => s.saver_id === user_id),
+            creator: p.creator
+        }
+    });
+
+}
