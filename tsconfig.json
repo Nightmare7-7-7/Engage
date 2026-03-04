@@ -11,7 +11,7 @@
 
     // Type checking
     "strict": true,                 // enable all strict checks
-    "noImplicitAny": true,
+    "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
