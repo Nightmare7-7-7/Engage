@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nodemon --exec npx tsx src/server.ts",
     "start": "node dist/server.js",
-    "build": "tsc"
+    "build": "tsc",
+    "postinstall": "prisma generate"
   },
   "license": "MIT",
   "dependencies": {
