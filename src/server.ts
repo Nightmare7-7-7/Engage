@@ -37,10 +37,13 @@ app.use(helmet())
 // start the server
 const port = process.env.PORT || 8081;
 
-app.listen((port),()=>{
-    console.log(`Server is running on http://localhost:${port}`);
-});
 
 //api paths
 app.use("/api/v1",userRoutes);
 app.use("/api/v1/post", postRoutes);
+
+
+
+app.listen((port),()=>{
+    console.log(`Server is running on http://localhost:${port}`);
+});
