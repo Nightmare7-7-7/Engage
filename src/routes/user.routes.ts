@@ -7,23 +7,24 @@ import { VerifiedEmail } from '../middlewares/verifiedEmail';
 const userRoutes = Router()
 
 //non authentication required routes
-userRoutes.post("/user/account/create", uploadImage.single("image"), Register);
-userRoutes.post("/user/acount/profile-picture", RateLimiter(10), uploadImage.single("image"), UploadProfile);
-userRoutes.post("/user/account/login", RateLimiter(10), Login);
-userRoutes.get("/user/account/logout", Logout);
-userRoutes.post("/user/account/forget-password", RateLimiter(5), ForgetPassword);
-userRoutes.post("/user/account/reset-password", RateLimiter(25), ResetPassword);
-userRoutes.post("/user/account/email-verification", RateLimiter(8), EmailVerification);
-userRoutes.get("/user/account/verify-email", VerfyEmail);
-userRoutes.get("/user/get", AuthCheck, GetUser);
-userRoutes.get("/user/follow-list", GetFollowList);
-userRoutes.get('/user/following/posts', AuthCheck, GetFollowingPosts);
-userRoutes.get('/user/suggestions',AuthCheck, GetUserSuggestions);
+userRoutes.post("/account/create", uploadImage.single("image"), Register);
+userRoutes.post("/acount/profile-picture", RateLimiter(10), uploadImage.single("image"), UploadProfile);
+userRoutes.post("/account/login", RateLimiter(10), Login);
+userRoutes.get("/account/logout", Logout);
+userRoutes.post("/account/forget-password", RateLimiter(5), ForgetPassword);
+userRoutes.post("/account/reset-password", RateLimiter(25), ResetPassword);
+userRoutes.post("/account/email-verification", RateLimiter(8), EmailVerification);
+userRoutes.get("/account/verify-email", VerfyEmail);
+userRoutes.get("/follow-list", GetFollowList);
+
 
 // authentication required routes
-userRoutes.get("/user/account/me", AuthCheck, SelfInfo);
-userRoutes.post("/user/account/change-password", AuthCheck, VerifiedEmail, ChangePassword);
-userRoutes.get("/user/posts", AuthCheck, GetUserPosts);
-userRoutes.get("/user/follow", AuthCheck, VerifiedEmail, Follow);
-userRoutes.patch("/user/account/update", AuthCheck, VerifiedEmail, uploadImage.single("image"), UpdateSelfInfo)
+userRoutes.get("/account/me", AuthCheck, SelfInfo);
+userRoutes.get('/suggestions',AuthCheck, GetUserSuggestions);
+userRoutes.get('/following/posts', AuthCheck, GetFollowingPosts);
+userRoutes.get("/get", AuthCheck, GetUser);
+userRoutes.post("/account/change-password", AuthCheck, VerifiedEmail, ChangePassword);
+userRoutes.get("/posts", AuthCheck, GetUserPosts);
+userRoutes.get("/follow", AuthCheck, VerifiedEmail, Follow);
+userRoutes.patch("/account/update", AuthCheck, VerifiedEmail, uploadImage.single("image"), UpdateSelfInfo)
 export default userRoutes;
