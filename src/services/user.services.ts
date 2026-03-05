@@ -6,18 +6,11 @@ import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import crypto from "crypto"
 import mailer from "../utils/mailer";
 import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
-import { JwtPayload } from "jsonwebtoken";
-import cloudinary from "../configs/cloudinary";
+import { reg } from "../types/user.types";
 
-type UserData = {
-    fullname: string;
-    username: string;
-    email: string;
-    password: string;
-    profile_picture?: Buffer;
-};
 
-export const RegisterUser = async ({ fullname, username, email, password, profile_picture }: UserData) => {
+
+export const RegisterUser = async ({ fullname, username, email, password, profile_picture }: reg) => {
 
     const emailExists = await prisma.user.findUnique({
         where: { email }

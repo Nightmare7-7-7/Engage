@@ -1,24 +1,11 @@
 import { Request, Response } from "express";
 import { Create, GetPost, GetPosts, Update, Delete, LikeUnlikePost, Comment, CommentDelete, CommentUpdate, SaveUnsave, GetComments, CommentLike, CommentReply, GetReplies, DeleteReply, LikeUnlikeReply } from "../services/post.services";
 import { GotErr } from "../utils/error";
-import { success } from "zod";
+import { IUser } from "../types/user.types";
+import { post, PostUodate } from "../types/post.types"
 
-type post = {
-    caption?: string,
-    media?: string,
-    visibility?: string
-}
 
-interface IUser {
-    id: number,
-    fullname: string,
-    username: string,
-    email: string,
-    is_admin: boolean,
-    email_verified: boolean,
-    iat: number,
-    exp: number
-}
+
 
 
 export const CreatePost = async (req: Request, res: Response) => {
@@ -119,19 +106,11 @@ enum Visibility {
 }
 
 
-type UpdatePost = {
-    id: number,
-    caption?: string,
-    media?: string,
-    visibility?: Visibility
-}
-
-
 export const UpdatePost = async (req: Request, res: Response) => {
     try {
         const user = req.user as IUser;
 
-        const { id, caption, visibility }: UpdatePost = req.body;
+        const { id, caption, visibility }: PostUodate = req.body;
         const media = req.file?.buffer;
 
         const post = await Update(user, Number(id), caption, media, visibility);

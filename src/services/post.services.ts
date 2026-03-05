@@ -2,7 +2,7 @@ import { CommentPost } from './../controllers/post.controllers';
 import { GotErr } from "../utils/error"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { prisma } from "../configs/client";
-import { number } from "zod";
+
 
 
 

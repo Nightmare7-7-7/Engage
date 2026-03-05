@@ -1,16 +1,10 @@
-import { success, ZodError } from "zod";
+import { ZodError } from "zod";
 import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList, FollowingPosts, UserSuggestions } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator, UpdateInfoValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
+import { reg, IUser, UpdateInf } from "../types/user.types";
 
-interface reg {
-    fullname: string
-    username: string
-    email: string
-    password: string
-
-}
 
 export const Register = async (req: Request, res: Response) => {
     try {
@@ -284,16 +278,7 @@ export const VerfyEmail = async (req: Request, res: Response) => {
 
 
 
-interface IUser {
-    id: number,
-    fullname: string,
-    username: string,
-    email: string,
-    is_admin: boolean,
-    email_verified: boolean,
-    iat: number,
-    exp: number
-}
+
 
 export const SelfInfo = async (req: Request, res: Response) => {
     try {
@@ -450,13 +435,6 @@ export const GetUser = async (req: Request, res: Response) => {
     }
 }
 
-
-interface UpdateInf {
-    fullname?: string,
-    username?: string,
-    bio?: string
-
-}
 
 export const UpdateSelfInfo = async (req: Request, res: Response) => {
     try {
