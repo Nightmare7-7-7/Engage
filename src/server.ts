@@ -27,8 +27,6 @@ app.use(cors({
     origin: [
         'http://localhost:8080',
         'http://localhost:5173',
-        'https://huggable-foundation-build.lovable.app',
-        'https://v0-frontend-for-backend-livid.vercel.app',
         /\.lovable\.app$/,
         /\.vercel\.app$/ // This regex will allow all vercel.app subdomains
     ],
@@ -42,9 +40,8 @@ const port = process.env.PORT || 8081;
 
 
 //api paths
-app.use("/api/v1",userRoutes);
+app.use("/api/v1/user",userRoutes);
 app.use("/api/v1/post", postRoutes);
-
 
 
 app.listen((port),()=>{
