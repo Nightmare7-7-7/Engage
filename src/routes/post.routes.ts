@@ -10,7 +10,7 @@ const postRoutes = Router()
 
 
 
-postRoutes.post('/create', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, VerifiedEmail, CreatePost);
+postRoutes.post('/create', AuthCheck, VerifiedEmail, multerWrapper(uploadMedia.single("media"), "media"), CreatePost);
 postRoutes.get('/get/all', AuthCheck, GetAllPosts);
 postRoutes.get('/get', AuthCheck, GetPostById);
 postRoutes.put('/update', multerWrapper(uploadMedia.single("media"), "media"), AuthCheck, VerifiedEmail, UpdatePost);

@@ -17,7 +17,10 @@ const limiter = rateLimit({
 // Create an Express application
 const app = express();  // Also fixed here
 app.use(limiter);
-app.use(express.json());
+
+// Increase limit for JSON and URL-encoded bodies
+app.use(express.json({ limit: "200mb" }));
+app.use(express.urlencoded({ extended: true, limit: "200mb" }));
 app.use(parser())
 
 app.use(cors({
