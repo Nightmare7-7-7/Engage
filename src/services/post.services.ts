@@ -1,8 +1,7 @@
-import { CommentPost } from './../controllers/post.controllers';
 import { GotErr } from "../utils/error"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { prisma } from "../configs/client";
-import { notify_type } from '../types/notification.types';
+import { notify_type } from "../types/notification.types"
 import { io } from '../server';
 
 
@@ -604,7 +603,7 @@ export const Comment = async (user: IUser, post_id: number, comment: string) => 
         }
     });
 
-    io.to(`user_${post.creator_id}`).emit('notification',{
+    io.to(`user_${post.creator_id}`).emit('notification', {
         notify
     });
 
@@ -961,7 +960,7 @@ export const CommentLike = async (user: IUser, comment_id: number, action: strin
 
         io.to(`user_${existingComment.commenter_id}`).emit('notification', { notify });
 
-    
+
         return like;
     }
 
@@ -1036,24 +1035,24 @@ export const CommentReply = async (user: IUser, comment_id: number, reply: strin
 
     const message = `${user.username} has replied to your comment "${existingComment.comment}"`
 
-        const notify = await prisma.notification.create({
-            data: {
-                type: notify_type.comment_reply,
-                message: message,
-                sender_id: user.id,
-                reciever_id: existingComment.commenter_id,
-                post_id: existingComment.commented_id
-            },
-            select: {
-                id: true,
-                type: true,
-                message: true,
-                post_id: true,
-                sender_id: true
-            }
-        });
+    const notify = await prisma.notification.create({
+        data: {
+            type: notify_type.comment_reply,
+            message: message,
+            sender_id: user.id,
+            reciever_id: existingComment.commenter_id,
+            post_id: existingComment.commented_id
+        },
+        select: {
+            id: true,
+            type: true,
+            message: true,
+            post_id: true,
+            sender_id: true
+        }
+    });
 
-        io.to(`user_${existingComment.commenter_id}`).emit('notification', { notify });
+    io.to(`user_${existingComment.commenter_id}`).emit('notification', { notify });
 
     return replyComment;
 }
