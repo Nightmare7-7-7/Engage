@@ -6,8 +6,9 @@ import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import crypto from "crypto"
 import mailer from "../utils/mailer";
 import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
-import { reg } from "../types/user.types";
-
+import { IUser, reg } from "../types/user.types";
+import { notify_type } from "../types/notification.types"
+import { io } from "../server";
 
 
 export const RegisterUser = async ({ fullname, username, email, password, profile_picture }: reg) => {
@@ -482,7 +483,7 @@ export const userPosts = async (user_id: number) => {
 }
 
 
-export const FollowUnfollow = async (user_id: number, following_id: number, action: string) => {
+export const FollowUnfollow = async (user: IUser, following_id: number, action: string) => {
 
     if (!following_id) {
         throw new GotErr(400, "id is required");
@@ -497,7 +498,7 @@ export const FollowUnfollow = async (user_id: number, following_id: number, acti
     }
 
     // prevent user not to follow or unfollow himself
-    if (user_id === following_id) {
+    if (user.id === following_id) {
         throw new GotErr(400, "you can't follow/unfollow yourself")
     }
 
@@ -515,7 +516,7 @@ export const FollowUnfollow = async (user_id: number, following_id: number, acti
     const existingFollow = await prisma.follow.findUnique({
         where: {
             follower_id_following_id: {
-                follower_id: user_id,
+                follower_id: user.id,
                 following_id: following_id
             }
         }
@@ -530,8 +531,27 @@ export const FollowUnfollow = async (user_id: number, following_id: number, acti
         const follow = await prisma.follow.create({
             data: {
                 following_id: following_id,
-                follower_id: user_id
+                follower_id: user.id
             }
+        });
+
+        const message = `${user.username} has started following you`
+        const notify = await prisma.notification.create({
+            data: {
+                type: notify_type.Follow,
+                sender_id: user.id,
+                reciever_id: following_id,
+                message: message
+            },
+            select:{
+                id: true,
+                type: true,
+                message: true
+            }
+        });
+
+        io.to(`user_${following_id}`).emit('notification',{
+            notify
         });
 
         if (!follow) {
@@ -551,11 +571,12 @@ export const FollowUnfollow = async (user_id: number, following_id: number, acti
         const unfollow = await prisma.follow.delete({
             where: {
                 follower_id_following_id: {
-                    follower_id: user_id,
+                    follower_id: user.id,
                     following_id: following_id
                 }
             }
         });
+   
 
         if (!unfollow) {
             throw new Error("Failed to follow the user");
@@ -869,7 +890,5 @@ export const UserSuggestions = async (user_id: number) => {
     });
 
     return suggestions;
-
-
 
 }

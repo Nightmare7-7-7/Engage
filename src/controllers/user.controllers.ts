@@ -16,7 +16,7 @@ export const Register = async (req: Request, res: Response) => {
             password: req.body.password
         }
 
-        const { fullname, username, email, password }: reg = registerValidator.parse(body);
+        const { fullname, username, email, password } = registerValidator.parse(body);
 
         const profile_picture = req.file?.buffer
 
@@ -380,7 +380,7 @@ export const Follow = async (req: Request, res: Response) => {
 
         const { id, action } = req.query
 
-        const follow = await FollowUnfollow(user.id, Number(id), action as string);
+        const follow = await FollowUnfollow(user, Number(id), action as string);
 
         return res.status(200).json({
             success: true,

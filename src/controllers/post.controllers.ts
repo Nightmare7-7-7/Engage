@@ -176,7 +176,7 @@ export const LikePost = async (req: Request, res: Response) => {
         const post_id = req.query.post_id;
         const action = req.query.action;
 
-        const like = await LikeUnlikePost(user.id, Number(post_id), String(action));
+        const like = await LikeUnlikePost(user, Number(post_id), String(action));
 
         return res.status(200).json({
             success: true,
@@ -205,7 +205,7 @@ export const CommentPost = async (req: Request, res: Response) => {
         const user = req.user as IUser;
         const { id, comment } = req.body;
 
-        const postComment = await Comment(user.id, Number(id), comment);
+        const postComment = await Comment(user, Number(id), comment);
 
         return res.status(201).json({
             success: true,
@@ -362,7 +362,7 @@ export const LikeComment = async (req: Request, res: Response) => {
         const user = req.user as IUser
         const { comment_id, action } = req.query
 
-        const like = await CommentLike(user.id, Number(comment_id), action as string);
+        const like = await CommentLike(user, Number(comment_id), action as string);
 
         //retutn message based on action type 
         const msg = action === "like" ? "comment liked successfully" : "comment unliked successfully";
@@ -397,7 +397,7 @@ export const Reply = async (req: Request, res: Response) => {
         const user = req.user as IUser
         const { id, reply_text } = req.body
 
-        const reply = await CommentReply(user.id, Number(id), reply_text as string);
+        const reply = await CommentReply(user, Number(id), reply_text as string);
 
         return res.status(200).json({
             success: true,
@@ -495,7 +495,7 @@ export const LikeCommentReply = async (req: Request, res: Response) => {
 
         const msg = action === "like" ? "reply liked successfully" : "reply unliked successfully";
 
-        const like = await LikeUnlikeReply(user.id, Number(reply_id), action as string)
+        const like = await LikeUnlikeReply(user, Number(reply_id), action as string)
 
         return res.status(200).json({
             success: true,

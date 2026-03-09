@@ -2,6 +2,8 @@ import { CommentPost } from './../controllers/post.controllers';
 import { GotErr } from "../utils/error"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import { prisma } from "../configs/client";
+import { notify_type } from '../types/notification.types';
+import { io } from '../server';
 
 
 
@@ -437,7 +439,7 @@ export const Delete = async (user: IUser, post_id: number) => {
 }
 
 
-export const LikeUnlikePost = async (user_id: number, post_id: number, action: string) => {
+export const LikeUnlikePost = async (user: IUser, post_id: number, action: string) => {
 
     // action can be either "like" or "unlike"
 
@@ -470,7 +472,7 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
         const existingLike = await prisma.like.findUnique({
             where: {
                 liker_id_liked_id: {
-                    liker_id: user_id,
+                    liker_id: user.id,
                     liked_id: post_id
                 }
             }
@@ -484,10 +486,31 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
 
         const like = await prisma.like.create({
             data: {
-                liker_id: user_id,
+                liker_id: user.id,
                 liked_id: post_id,
             }
         });
+
+        const message = `${user.username} has liked your post`
+
+        const notify = await prisma.notification.create({
+            data: {
+                type: notify_type.Like_Post,
+                message: message,
+                sender_id: user.id,
+                reciever_id: existingPost.creator_id,
+                post_id: existingPost.id
+            },
+            select: {
+                id: true,
+                type: true,
+                message: true,
+                post_id: true,
+                sender_id: true
+            }
+        });
+
+        io.to(`user_${existingPost.creator_id}`).emit('notification', { notify });
 
         return "post liked successfully";
     }
@@ -497,7 +520,7 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
         const existingLike = await prisma.like.findUnique({
             where: {
                 liker_id_liked_id: {
-                    liker_id: user_id,
+                    liker_id: user.id,
                     liked_id: post_id
                 }
             }
@@ -510,7 +533,7 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
         const unlike = await prisma.like.delete({
             where: {
                 liker_id_liked_id: {
-                    liker_id: user_id,
+                    liker_id: user.id,
                     liked_id: post_id
                 }
             }
@@ -528,7 +551,7 @@ export const LikeUnlikePost = async (user_id: number, post_id: number, action: s
 
 }
 
-export const Comment = async (user_id: number, post_id: number, comment: string) => {
+export const Comment = async (user: IUser, post_id: number, comment: string) => {
 
     if (!post_id) {
         throw new GotErr(400, "id is required")
@@ -552,7 +575,7 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
     const CommentPost = await prisma.comment.create({
         data: {
             comment,
-            commenter_id: user_id,
+            commenter_id: user.id,
             commented_id: post.id
 
         }
@@ -561,6 +584,29 @@ export const Comment = async (user_id: number, post_id: number, comment: string)
     if (!CommentPost) {
         throw new Error("Failed to delete the post")
     }
+
+    const message = `${user.username} has commented on your post`
+
+    const notify = await prisma.notification.create({
+        data: {
+            type: notify_type.comment,
+            message: message,
+            sender_id: user.id,
+            reciever_id: post.creator_id,
+            post_id: post_id
+        },
+        select: {
+            id: true,
+            type: true,
+            message: true,
+            post_id: true,
+            sender_id: true
+        }
+    });
+
+    io.to(`user_${post.creator_id}`).emit('notification',{
+        notify
+    });
 
     return CommentPost;
 }
@@ -832,7 +878,7 @@ enum typeof_like {
 
 
 
-export const CommentLike = async (user_id: number, comment_id: number, action: string) => {
+export const CommentLike = async (user: IUser, comment_id: number, action: string) => {
     if (!comment_id) {
         throw new GotErr(400, "comment_id is required");
     }
@@ -861,7 +907,7 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
         where: {
             like_type: typeof_like.Comment,
             liker_id_comment_id: {
-                liker_id: user_id,
+                liker_id: user.id,
                 comment_id: existingComment.id
             }
         }
@@ -880,7 +926,7 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
             data: {
                 like_type: typeof_like.Comment,
                 comment_id: existingComment.id,
-                liker_id: user_id
+                liker_id: user.id
             },
             select: {
                 id: true,
@@ -894,6 +940,28 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
             throw new Error("Failed to like the comment");
         }
 
+        const message = `${user.username} has liked your comment "${existingComment.comment}"`
+
+        const notify = await prisma.notification.create({
+            data: {
+                type: notify_type.Like_Comment,
+                message: message,
+                sender_id: user.id,
+                reciever_id: existingComment.commenter_id,
+                post_id: existingComment.commented_id
+            },
+            select: {
+                id: true,
+                type: true,
+                message: true,
+                post_id: true,
+                sender_id: true
+            }
+        });
+
+        io.to(`user_${existingComment.commenter_id}`).emit('notification', { notify });
+
+    
         return like;
     }
 
@@ -908,7 +976,7 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
             where: {
                 like_type: typeof_like.Comment,
                 liker_id_comment_id: {
-                    liker_id: user_id,
+                    liker_id: user.id,
                     comment_id: existingComment.id
                 }
             },
@@ -934,7 +1002,7 @@ export const CommentLike = async (user_id: number, comment_id: number, action: s
 }
 
 
-export const CommentReply = async (user_id: number, comment_id: number, reply: string) => {
+export const CommentReply = async (user: IUser, comment_id: number, reply: string) => {
     if (!comment_id) {
         throw new GotErr(400, "comment id is required");
     }
@@ -956,7 +1024,7 @@ export const CommentReply = async (user_id: number, comment_id: number, reply: s
     const replyComment = await prisma.reply.create({
         data: {
             reply,
-            replier_id: user_id,
+            replier_id: user.id,
             replied_id: comment_id
 
         }
@@ -965,6 +1033,27 @@ export const CommentReply = async (user_id: number, comment_id: number, reply: s
     if (!replyComment) {
         throw new Error("Failed to give reply to the comment")
     }
+
+    const message = `${user.username} has replied to your comment "${existingComment.comment}"`
+
+        const notify = await prisma.notification.create({
+            data: {
+                type: notify_type.comment_reply,
+                message: message,
+                sender_id: user.id,
+                reciever_id: existingComment.commenter_id,
+                post_id: existingComment.commented_id
+            },
+            select: {
+                id: true,
+                type: true,
+                message: true,
+                post_id: true,
+                sender_id: true
+            }
+        });
+
+        io.to(`user_${existingComment.commenter_id}`).emit('notification', { notify });
 
     return replyComment;
 }
@@ -1060,7 +1149,7 @@ export const DeleteReply = async (user: IUser, reply_id: number) => {
 
 
 
-export const LikeUnlikeReply = async (user_id: number, reply_id: number, action: string) => {
+export const LikeUnlikeReply = async (user: IUser, reply_id: number, action: string) => {
     if (!reply_id) {
         throw new GotErr(400, "reply_id is required")
     }
@@ -1087,7 +1176,7 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
         where: {
             like_type: typeof_like.Reply,
             liker_id_reply_id: {
-                liker_id: user_id,
+                liker_id: user.id,
                 reply_id: reply_id
             }
         }
@@ -1103,7 +1192,7 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
             data: {
                 like_type: typeof_like.Reply,
                 reply_id: reply_id,
-                liker_id: user_id
+                liker_id: user.id
             },
             select: {
                 id: true,
@@ -1116,6 +1205,27 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
         if (!like) {
             throw new Error("failed to like reply")
         }
+
+        const message = `${user.username} has liked your reply "${existingReply.reply}"`
+
+        const notify = await prisma.notification.create({
+            data: {
+                type: notify_type.Like_reply,
+                message: message,
+                sender_id: user.id,
+                reciever_id: existingReply.replier_id,
+                post_id: existingLike
+            },
+            select: {
+                id: true,
+                type: true,
+                message: true,
+                post_id: true,
+                sender_id: true
+            }
+        });
+
+        io.to(`user_${existingReply.replier_id}`).emit('notification', { notify });
 
         return like;
     }
@@ -1130,7 +1240,7 @@ export const LikeUnlikeReply = async (user_id: number, reply_id: number, action:
             where: {
                 like_type: typeof_like.Reply,
                 liker_id_reply_id: {
-                    liker_id: user_id,
+                    liker_id: user.id,
                     reply_id: reply_id
                 },
             },
