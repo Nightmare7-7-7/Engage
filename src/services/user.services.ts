@@ -543,14 +543,14 @@ export const FollowUnfollow = async (user: IUser, following_id: number, action: 
                 reciever_id: following_id,
                 message: message
             },
-            select:{
+            select: {
                 id: true,
                 type: true,
                 message: true
             }
         });
 
-        io.to(`user_${following_id}`).emit('notification',{
+        io.to(`user_${following_id}`).emit('notification', {
             notify
         });
 
@@ -576,7 +576,7 @@ export const FollowUnfollow = async (user: IUser, following_id: number, action: 
                 }
             }
         });
-   
+
 
         if (!unfollow) {
             throw new Error("Failed to follow the user");
@@ -891,4 +891,19 @@ export const UserSuggestions = async (user_id: number) => {
 
     return suggestions;
 
+}
+
+
+export const UserNotifications = async (user_id: number) => {
+    const notifies = await prisma.notification.findMany({
+        where:{
+            reciever_id: user_id
+        }
+    });
+
+    if(!notifies){
+        throw new GotErr(404, "No notifications yet")
+    }
+
+    return notifies;
 }
