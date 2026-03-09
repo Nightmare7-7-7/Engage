@@ -4,6 +4,7 @@ import { uploadImage } from "../middlewares/multer";
 import RateLimiter from "../utils/rateLimiter";
 import { AuthCheck } from "../middlewares/auth.middleware";
 import { VerifiedEmail } from '../middlewares/verifiedEmail';
+import { CheckNotify, ClearAllNotification } from "../controllers/notifications.controller";
 const userRoutes = Router()
 
 //non authentication required routes
@@ -20,12 +21,17 @@ userRoutes.get("/follow-list", GetFollowList);
 
 // authentication required routes
 userRoutes.get("/account/me", AuthCheck, SelfInfo);
-userRoutes.get('/suggestions',AuthCheck, GetUserSuggestions);
+userRoutes.get('/suggestions', AuthCheck, GetUserSuggestions);
 userRoutes.get('/following/posts', AuthCheck, GetFollowingPosts);
 userRoutes.get("/get", AuthCheck, GetUser);
 userRoutes.post("/account/change-password", AuthCheck, VerifiedEmail, ChangePassword);
 userRoutes.get("/posts", AuthCheck, GetUserPosts);
 userRoutes.get("/follow", AuthCheck, VerifiedEmail, Follow);
 userRoutes.patch("/account/update", AuthCheck, VerifiedEmail, uploadImage.single("image"), UpdateSelfInfo);
-userRoutes.get('/notifications',AuthCheck, GetUserNotifications);
-export default userRoutes; 
+
+
+//notification releted paths
+userRoutes.get('/notifications', AuthCheck, GetUserNotifications);
+userRoutes.get('/notifications/check', AuthCheck, CheckNotify);
+userRoutes.delete('/notifications/clear', AuthCheck, ClearAllNotification);
+export default userRoutes;
