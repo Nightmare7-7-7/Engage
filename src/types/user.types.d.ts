@@ -3,7 +3,7 @@ export interface reg {
     username: string
     email: string
     password: string,
-    profile_picture: Buffer
+    profile_picture?: Buffer
 
 }
 
