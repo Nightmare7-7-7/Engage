@@ -1213,14 +1213,12 @@ export const LikeUnlikeReply = async (user: IUser, reply_id: number, action: str
                 type: notify_type.Like_reply,
                 message: message,
                 sender_id: user.id,
-                reciever_id: existingReply.replier_id,
-                post_id: existingLike
+                reciever_id: existingReply.replier_id
             },
             select: {
                 id: true,
                 type: true,
                 message: true,
-                post_id: true,
                 sender_id: true
             }
         });
