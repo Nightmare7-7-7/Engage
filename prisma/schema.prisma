@@ -154,17 +154,16 @@ enum typeOfNotify {
   Like_Post
   Like_Comment
   Like_reply
-  
-  Post
-  Comment
-  Reply
+  comment
+  comment_reply
+  save
 }
 
 model Notification {
   id          Int          @id @default(autoincrement())
   type        typeOfNotify
   message     String?
-  is_checked  Boolean @default(false)
+  is_checked  Boolean      @default(false)
   sender_id   Int
   reciever_id Int
   post_id     Int?
