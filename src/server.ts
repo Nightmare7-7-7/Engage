@@ -6,11 +6,12 @@ import userRoutes from './routes/user.routes';
 import rateLimit from "express-rate-limit"
 import postRoutes from './routes/post.routes';
 import parser from "cookie-parser"
-
+import { createServer } from 'http'
+import { Server } from 'socket.io';
 //init global rate limiter 
 const limiter = rateLimit({
-    windowMs:15 * 60 * 1000,
-    max:400,
+    windowMs: 15 * 60 * 1000,
+    max: 400,
     message: "Too many requests try again later"
 });
 
@@ -35,15 +36,40 @@ app.use(cors({
 
 app.use(helmet())
 
+const httpServer = createServer(app);
+
+
+const io = new Server(httpServer, {
+    cors: {
+        origin: [/\.lovable\.app$/],
+        credentials: true
+    }
+});
+
+
+io.on('connection', (socket) => {
+    console.log('a user connected:', socket.id);
+    socket.on('join', (userId: number) => {
+        socket.join(`user_${userId}`);
+        console.log(`User ${userId} joined their room`)
+    });
+    socket.on('disconnect', () => {
+        console.log('user disconnected:', socket.id)
+    });
+
+})
+
 // start the server
 const port = process.env.PORT || 8081;
 
 
 //api paths
-app.use("/api/v1/user",userRoutes);
+app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/post", postRoutes);
 
 
-app.listen((port),()=>{
+httpServer.listen((port), () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
+
+export { io }
