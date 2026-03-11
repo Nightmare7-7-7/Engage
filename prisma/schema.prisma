@@ -45,6 +45,8 @@ model User {
   email_verification_hash String?
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @default(now()) @updatedAt
+  sentMessages            Chat[]        @relation("sender")
+  recieveMessages         Chat[]        @relation("reciever")
 }
 
 enum status {
@@ -171,4 +173,17 @@ model Notification {
   sender      User         @relation("sendNotify", fields: [sender_id], references: [id])
   reciever    User         @relation("recieveNotify", fields: [reciever_id], references: [id])
   post        Post?        @relation(fields: [post_id], references: [id])
+}
+
+
+model Chat {
+  id          Int      @id @default(autoincrement())
+  message     String
+  isRead       Boolean @default(false)
+  sender_id   Int
+  reciever_id Int
+  sender      User     @relation("sender", fields: [sender_id], references: [id])
+  reciever    User     @relation("reciever", fields: [reciever_id], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
 }
