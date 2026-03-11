@@ -1,5 +1,5 @@
 import { success, ZodError } from "zod";
-import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList, FollowingPosts, UserSuggestions, UserNotifications } from "../services/user.services";
+import { RegisterUser, LoginUser, UploadImage, SendCode, VerfyCode, SendVerifyEmail, VerfyEmailToken, GetSelfInfo, ChangePass, userPosts, FollowUnfollow, FindUser, UpdateInfo, FollowList, FollowingPosts, UserSuggestions, UserNotifications, UserChatBox } from "../services/user.services";
 import { ChangePassValidator, loginValidator, registerValidator, ResetPassValidator, UpdateInfoValidator } from "../validators/user.validators";
 import { Request, Response } from "express";
 import { GotErr } from "../utils/error";
@@ -591,6 +591,34 @@ export const GetUserNotifications = async (req: Request, res: Response) => {
             message: "Notifications successfully retrieved",
             data: notifies
         });
+    } catch (err: any) {
+        if (err instanceof GotErr) {
+            return res.status(err.code).json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+}
+
+
+
+export const UserAvailableChats = async (req: Request, res: Response) => {
+    try {
+        const user = req.user as IUser;
+        const chatbox = await UserChatBox(user.id);
+        return res.status(200).json({
+            success: true,
+            message: "chatbox gathered successfully",
+            data: chatbox
+        });
+        
     } catch (err: any) {
         if (err instanceof GotErr) {
             return res.status(err.code).json({

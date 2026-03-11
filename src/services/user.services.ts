@@ -896,14 +896,71 @@ export const UserSuggestions = async (user_id: number) => {
 
 export const UserNotifications = async (user_id: number) => {
     const notifies = await prisma.notification.findMany({
-        where:{
+        where: {
             reciever_id: user_id
         }
     });
 
-    if(!notifies){
+    if (!notifies) {
         throw new GotErr(404, "No notifications yet")
     }
 
     return notifies;
 }
+
+
+export const UserChatBox = async (user_id: number) => {
+    const chatbox = await prisma.user.findUnique({
+        where: {
+            id: user_id
+        },
+        select: {
+            sentMessages: {
+                select: {
+                    reciever: {
+                        select: {
+                            id: true,
+                            fullname: true,
+                            username: true,
+                            profile_picture: true
+
+                        }
+                    }
+                }
+            },
+            recieveMessages: {
+                select: {
+                    sender: {
+                        select: {
+                            id: true,
+                            fullname: true,
+                            username: true,
+                            profile_picture: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!chatbox) return null;
+
+    // Combine senders and receivers and remove duplicates by id
+    const uniqueUsers = new Map();
+
+    // Add users from sent messages (receivers)
+    chatbox.sentMessages.forEach(msg => {
+        if (msg.reciever) {
+            uniqueUsers.set(msg.reciever.id, msg.reciever);
+        }
+    });
+
+    // Add users from received messages (senders)
+    chatbox.recieveMessages.forEach(msg => {
+        if (msg.sender) {
+            uniqueUsers.set(msg.sender.id, msg.sender);
+        }
+    });
+
+    return Array.from(uniqueUsers.values());
+};
