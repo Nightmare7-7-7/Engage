@@ -8,6 +8,7 @@ import postRoutes from './routes/post.routes';
 import parser from "cookie-parser"
 import { createServer } from 'http'
 import { Server } from 'socket.io';
+import chatRoutes from './routes/chat.routes';
 //init global rate limiter 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -66,6 +67,7 @@ const port = process.env.PORT || 8081;
 //api paths
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/post", postRoutes);
+app.use("/api/v1/chat",chatRoutes);
 
 
 httpServer.listen((port), () => {
