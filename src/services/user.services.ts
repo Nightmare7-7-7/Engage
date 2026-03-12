@@ -4,12 +4,13 @@ import { GotErr } from "../utils/error";
 import { compare, hash } from "../utils/hash";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import crypto from "crypto"
-import mailer from "../utils/mailer";
 import { forgotPasswordCodeContent, verifyEmailContent } from "../utils/mailContent";
 import { IUser, reg } from "../types/user.types";
 import { notify_type } from "../types/notification.types"
 import { io } from "../server";
+import { Resend } from 'resend';
 
+const resend = new Resend(process.env.RESEND_API_KEY as string);
 
 export const RegisterUser = async ({ fullname, username, email, password, profile_picture }: reg) => {
 
@@ -196,13 +197,13 @@ export const SendCode = async (email: string) => {
 
     // send mail to the user email
 
-    const send = await mailer.sendMail({
-        from: process.env.EMAIL,
+    const send = await resend.emails.send({
+        from: process.env.EMAIL as string,
         to: email,
-        subject: "Password Reset Code",
+        subject: 'Password Reset Code',
         html: forgotPasswordCodeContent(code)
     });
-
+    
     if (!send) {
         throw new Error("Internal Server Error try later");
     }
@@ -289,14 +290,14 @@ export const SendVerifyEmail = async (email: string) => {
     //send email+random 6digits code hash for more enhanced security
     const hash = crypto.createHash("sha256").update(email + code).digest('hex');
 
-    const mail = await mailer.sendMail({
-        from: process.env.EMAIL,
+    const send = await resend.emails.send({
+        from: process.env.EMAIL as string,
         to: user.email,
-        subject: "Email verification link",
+        subject: 'Email verification link',
         html: verifyEmailContent(hash)
     });
 
-    if (!mail) {
+    if (!send) {
         throw new Error("Internal Server Error try later");
     }
 
