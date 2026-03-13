@@ -29,8 +29,7 @@ app.use(cors({
     origin: [
         'http://localhost:8080',
         'http://localhost:5173',
-        /\.lovable\.app$/,
-        /\.vercel\.app$/ // This regex will allow all vercel.app subdomains
+        /\.netlify\.app$/
     ],
     credentials: true // Important for sending cookies/auth headers
 }));
