@@ -41,7 +41,11 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
     cors: {
-        origin: [/\.lovable\.app$/],
+        origin: [
+        'http://localhost:8080',
+        'http://localhost:5173',
+        /\.netlify\.app$/
+    ],
         credentials: true
     }
 });
