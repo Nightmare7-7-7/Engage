@@ -9,6 +9,7 @@ import parser from "cookie-parser"
 import { createServer } from 'http'
 import { Server } from 'socket.io';
 import chatRoutes from './routes/chat.routes';
+import morgan from "morgan";
 //init global rate limiter 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -25,6 +26,7 @@ app.use(express.json({ limit: "200mb" }));
 app.use(express.urlencoded({ extended: true, limit: "200mb" }));
 app.use(parser())
 
+
 app.use(cors({
     origin: [
         'http://localhost:8080',
@@ -35,7 +37,7 @@ app.use(cors({
 }));
 
 app.use(helmet())
-
+app.use(morgan("combined"))
 const httpServer = createServer(app);
 
 
